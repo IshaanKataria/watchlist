@@ -44,3 +44,4 @@ CLAUDE.local.md
 notes/
 .env*.local
 .env
+git-setup.sh
