@@ -45,5 +45,11 @@ export default defineConfig([
     files: ["components/ui/**"],
     rules: { "max-lines": "off" },
   },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "lib/supabase/database.types.ts",
+  ]),
 ]);
