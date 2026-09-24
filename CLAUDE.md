@@ -31,7 +31,7 @@ Project conventions. Next.js specifics: see `AGENTS.md` and the bundled docs in 
 
 - TypeScript strict. No `any`; no `!` or `as` to silence the compiler — fix the type.
 - Zod schemas are the single source of truth: `type X = z.infer<typeof xSchema>`. Validate at the boundary once; trust types inside.
-- Comments explain *why*, never *what*. No commented-out code, no `console.log`, no TODO without an owner.
+- Comments explain _why_, never _what_. No commented-out code, no `console.log`, no TODO without an owner.
 - No abstraction before the third use. No utility file for one function. No wrapper components that only pass props through.
 - Files < 200 lines, components < 150. When exceeded, split by responsibility, not by line count.
 - Named exports, except Next route/page/layout files. Early returns over nesting. `async/await` over `.then`.
