@@ -17,7 +17,7 @@
     "test": "vitest run",
     "knip": "knip",
     "db:push": "supabase db push",
-    "db:types": "supabase gen types typescript --linked > lib/supabase/database.types.ts",
+    "db:types": "supabase gen types typescript --linked > /tmp/database.types.ts && mv /tmp/database.types.ts lib/supabase/database.types.ts",
     "seed": "node --env-file=.env.local scripts/seed.ts",
     "e2e": "playwright test"
   },
