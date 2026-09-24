@@ -40,5 +40,10 @@ export default defineConfig([
     files: ["**/*.{js,mjs,cjs}"],
     extends: [tseslint.configs.disableTypeChecked],
   },
+  {
+    // Vendored shadcn primitives; splitting them would fight `shadcn add` updates.
+    files: ["components/ui/**"],
+    rules: { "max-lines": "off" },
+  },
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
 ]);
