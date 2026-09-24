@@ -11,10 +11,12 @@ Project conventions. Next.js specifics: see `AGENTS.md` and the bundled docs in 
 ## Stack facts (Next 16 — do not use older idioms)
 
 - `proxy.ts`, not `middleware.ts`. `cookies()`, `headers()`, `params`, `searchParams` are async.
+- Type pages, layouts and route handlers with the generated `PageProps`, `LayoutProps` and `RouteContext` helpers, not hand-written `Promise` params.
+- `pnpm typecheck` runs `next typegen` before `tsc`: `next-env.d.ts` imports route types generated under `.next`.
 - `next build` does not lint; CI runs `pnpm check`.
 - Tailwind v4: tokens live in `app/globals.css` under `@theme`; there is no `tailwind.config`.
 - Supabase via `@supabase/ssr`; follow the current docs (`getClaims()` in the proxy). Regenerate types after every migration.
-- AI via Vercel AI SDK `generateObject` + Zod; model id from `process.env.AI_MODEL`.
+- AI via Vercel AI SDK 7 `generateText` with `Output.object` + Zod (`generateObject` is deprecated); model id from `process.env.AI_MODEL`.
 
 ## Architecture rules
 
@@ -31,7 +33,7 @@ Project conventions. Next.js specifics: see `AGENTS.md` and the bundled docs in 
 
 - TypeScript strict. No `any`; no `!` or `as` to silence the compiler — fix the type.
 - Zod schemas are the single source of truth: `type X = z.infer<typeof xSchema>`. Validate at the boundary once; trust types inside.
-- Comments explain *why*, never *what*. No commented-out code, no `console.log`, no TODO without an owner.
+- Comments explain _why_, never _what_. No commented-out code, no `console.log`, no TODO without an owner.
 - No abstraction before the third use. No utility file for one function. No wrapper components that only pass props through.
 - Files < 200 lines, components < 150. When exceeded, split by responsibility, not by line count.
 - Named exports, except Next route/page/layout files. Early returns over nesting. `async/await` over `.then`.
