@@ -39,6 +39,84 @@ export type Database = {
   };
   public: {
     Tables: {
+      genres: {
+        Row: {
+          id: number;
+          name: string;
+        };
+        Insert: {
+          id: number;
+          name: string;
+        };
+        Update: {
+          id?: number;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      movie_genres: {
+        Row: {
+          genre_id: number;
+          tmdb_id: number;
+        };
+        Insert: {
+          genre_id: number;
+          tmdb_id: number;
+        };
+        Update: {
+          genre_id?: number;
+          tmdb_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "movie_genres_genre_id_fkey";
+            columns: ["genre_id"];
+            isOneToOne: false;
+            referencedRelation: "genres";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "movie_genres_tmdb_id_fkey";
+            columns: ["tmdb_id"];
+            isOneToOne: false;
+            referencedRelation: "movies";
+            referencedColumns: ["tmdb_id"];
+          },
+        ];
+      };
+      movies: {
+        Row: {
+          backdrop_path: string | null;
+          created_at: string;
+          overview: string | null;
+          poster_path: string | null;
+          release_year: number | null;
+          runtime_minutes: number | null;
+          title: string;
+          tmdb_id: number;
+        };
+        Insert: {
+          backdrop_path?: string | null;
+          created_at?: string;
+          overview?: string | null;
+          poster_path?: string | null;
+          release_year?: number | null;
+          runtime_minutes?: number | null;
+          title: string;
+          tmdb_id: number;
+        };
+        Update: {
+          backdrop_path?: string | null;
+          created_at?: string;
+          overview?: string | null;
+          poster_path?: string | null;
+          release_year?: number | null;
+          runtime_minutes?: number | null;
+          title?: string;
+          tmdb_id?: number;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
