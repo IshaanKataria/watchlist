@@ -50,3 +50,5 @@ export function toWatchlistItemDto({
     rating,
   };
 }
+
+export type WatchlistItem = ReturnType<typeof toWatchlistItemDto>;
