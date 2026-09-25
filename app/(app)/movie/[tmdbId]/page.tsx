@@ -55,7 +55,7 @@ export default async function MoviePage({
               {movie.title}
             </h1>
             <p className="text-sm text-muted-foreground">{facts}</p>
-            <WatchlistButton tmdbId={movie.tmdbId} entry={entry} />
+            <WatchlistButton tmdbId={movie.tmdbId} initialEntry={entry} />
           </div>
         </div>
       </section>

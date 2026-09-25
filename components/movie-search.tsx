@@ -8,12 +8,11 @@ import { PosterGrid, PosterGridSkeleton } from "@/components/poster-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WatchlistButton } from "@/components/watchlist-button";
-import { movieSummarySchema } from "@/services/dto";
-import { entryStateSchema } from "@/services/watchlist.schema";
+import { entrySchema, movieSummarySchema } from "@/services/dto";
 
 const responseSchema = z.object({
   results: z.array(
-    movieSummarySchema.extend({ entry: entryStateSchema.nullable() }),
+    movieSummarySchema.extend({ entry: entrySchema.nullable() }),
   ),
 });
 
@@ -129,7 +128,7 @@ function SearchResults({
         movie.voteAverage > 0 ? score.format(movie.voteAverage) : null
       }
       action={(movie) => (
-        <WatchlistButton tmdbId={movie.tmdbId} entry={movie.entry} />
+        <WatchlistButton tmdbId={movie.tmdbId} initialEntry={movie.entry} />
       )}
     />
   );

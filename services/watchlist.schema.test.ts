@@ -9,9 +9,12 @@ describe("addEntrySchema", () => {
     });
   });
 
-  it.each([0, -1, 1.5, "438631", null])("rejects the id %j", (tmdbId) => {
-    expect(addEntrySchema.safeParse({ tmdbId }).success).toBe(false);
-  });
+  it.each([0, -1, 1.5, 2 ** 31, "438631", null])(
+    "rejects the id %j",
+    (tmdbId) => {
+      expect(addEntrySchema.safeParse({ tmdbId }).success).toBe(false);
+    },
+  );
 
   it("drops a spoofed user id", () => {
     expect(addEntrySchema.parse({ tmdbId: 1, userId: "someone" })).toEqual({

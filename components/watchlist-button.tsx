@@ -7,23 +7,23 @@ import { useState, useTransition } from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { mutate } from "@/lib/api";
-import type { EntryState } from "@/services/watchlist.schema";
+import type { EntryDto } from "@/services/dto";
 
 // Local state is enough after an add: every search and page load reads the entry afresh.
 export function WatchlistButton({
   tmdbId,
-  entry: listed,
+  initialEntry,
 }: {
   tmdbId: number;
-  entry: EntryState | null;
+  initialEntry: EntryDto | null;
 }) {
-  const [entry, setEntry] = useState(listed);
+  const [entry, setEntry] = useState(initialEntry);
   const [pending, startTransition] = useTransition();
 
   function add() {
     startTransition(async () => {
       if (await mutate("POST", "/api/watchlist", { tmdbId })) {
-        setEntry({ status: "to_watch", rating: null });
+        setEntry({ tmdbId, status: "to_watch", rating: null });
       }
     });
   }

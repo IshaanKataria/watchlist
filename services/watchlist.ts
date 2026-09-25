@@ -1,5 +1,6 @@
 import { ApiError } from "@/lib/http";
 import { createClient } from "@/lib/supabase/server";
+import { searchMovies } from "@/lib/tmdb";
 
 import { toEntryDto, toWatchlistItemDto } from "./dto";
 import { cacheMovie } from "./movies";
@@ -79,19 +80,18 @@ export async function getEntry(userId: string, tmdbId: number) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("watchlist_entries")
-    .select("status, rating")
+    .select("tmdb_id, status, rating")
     .eq("user_id", userId)
     .eq("tmdb_id", tmdbId)
     .maybeSingle()
     .throwOnError();
-  return data;
+  return data && toEntryDto(data);
 }
 
-// Pairs each film with the member's entry, or null, so a result list can offer Add or show status.
-export async function withEntries<T extends { tmdbId: number }>(
-  userId: string,
-  movies: T[],
-) {
+// TMDB results paired with the member's entry, or null, so each can offer Add or show its status.
+export async function searchWithEntries(userId: string, q: string) {
+  const movies = await searchMovies(q);
+  if (movies.length === 0) return [];
   const supabase = await createClient();
   const { data } = await supabase
     .from("watchlist_entries")
@@ -103,7 +103,7 @@ export async function withEntries<T extends { tmdbId: number }>(
     )
     .throwOnError();
   const entries = new Map(
-    data.map(({ tmdb_id, status, rating }) => [tmdb_id, { status, rating }]),
+    data.map((entry) => [entry.tmdb_id, toEntryDto(entry)]),
   );
   return movies.map((movie) => ({
     ...movie,
