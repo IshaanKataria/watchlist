@@ -10,11 +10,14 @@ import { mutate } from "@/lib/api";
 import type { EntryDto } from "@/services/dto";
 
 // Local state is enough after an add: every search and page load reads the entry afresh.
+// The hidden title tells a screen reader which card's button it is on.
 export function WatchlistButton({
   tmdbId,
+  title,
   initialEntry,
 }: {
   tmdbId: number;
+  title: string;
   initialEntry: EntryDto | null;
 }) {
   const [entry, setEntry] = useState(initialEntry);
@@ -33,6 +36,7 @@ export function WatchlistButton({
       <Button onClick={add} disabled={pending} className="h-11 px-4">
         <PlusIcon />
         Add
+        <span className="sr-only">, {title}</span>
       </Button>
     );
   }
@@ -57,6 +61,7 @@ export function WatchlistButton({
           )}
         </>
       )}
+      <span className="sr-only">, {title}</span>
     </Link>
   );
 }

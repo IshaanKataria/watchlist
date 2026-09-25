@@ -128,7 +128,11 @@ function SearchResults({
         movie.voteAverage > 0 ? score.format(movie.voteAverage) : null
       }
       action={(movie) => (
-        <WatchlistButton tmdbId={movie.tmdbId} initialEntry={movie.entry} />
+        <WatchlistButton
+          tmdbId={movie.tmdbId}
+          title={movie.title}
+          initialEntry={movie.entry}
+        />
       )}
     />
   );

@@ -62,6 +62,7 @@ export function EntryActions({ entry }: { entry: WatchlistItem }) {
         className="h-11 flex-1 px-2"
       >
         {entry.status === "watched" ? "Change rating" : "Mark watched"}
+        <span className="sr-only">, {entry.title}</span>
       </Button>
       <RatingSheet
         title={entry.title}
