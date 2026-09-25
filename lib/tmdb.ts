@@ -9,15 +9,15 @@ export const searchQuerySchema = z.object({
   q: z.string().trim().min(1).max(100),
 });
 
-const movieFields = {
+const movieSchema = z.object({
   id: z.number(),
   title: z.string(),
   release_date: z.string().optional(),
   poster_path: z.string().nullable(),
   vote_average: z.number(),
-};
+});
 
-function toSummary(movie: z.infer<z.ZodObject<typeof movieFields>>) {
+function toSummary(movie: z.infer<typeof movieSchema>) {
   return {
     tmdbId: movie.id,
     title: movie.title,
@@ -28,10 +28,9 @@ function toSummary(movie: z.infer<z.ZodObject<typeof movieFields>>) {
   } satisfies MovieSummary;
 }
 
-const searchSchema = z.object({ results: z.array(z.object(movieFields)) });
+const searchSchema = z.object({ results: z.array(movieSchema) });
 
-const detailSchema = z.object({
-  ...movieFields,
+const detailSchema = movieSchema.extend({
   backdrop_path: z.string().nullable(),
   runtime: z.number().nullable(),
   overview: z.string(),
