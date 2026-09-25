@@ -35,7 +35,11 @@ export default async function StatsPage() {
         <Tile
           label="Watched"
           value={stats.watchedCount}
-          caption={`${formatRuntime(stats.totalRuntimeMinutes)} of film`}
+          caption={
+            stats.totalRuntimeMinutes > 0
+              ? `${formatRuntime(stats.totalRuntimeMinutes)} of film`
+              : "Runtime unknown"
+          }
         />
         <Tile
           label="Average rating"
@@ -99,10 +103,8 @@ function formatRuntime(total: number) {
   const days = Math.floor(total / 1440);
   const hours = Math.floor(total / 60) % 24;
   const units = days > 0 ? { d: days, h: hours } : { h: hours, m: total % 60 };
-  return (
-    Object.entries(units)
-      .filter(([, n]) => n > 0)
-      .map(([unit, n]) => `${n}${unit}`)
-      .join(" ") || "0m"
-  );
+  return Object.entries(units)
+    .filter(([, n]) => n > 0)
+    .map(([unit, n]) => `${n}${unit}`)
+    .join(" ");
 }
