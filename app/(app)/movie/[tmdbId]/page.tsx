@@ -67,9 +67,10 @@ export default async function MoviePage({
           <h2 className="text-lg font-semibold">Cast</h2>
           {/* Scrolls inside its own box so the page never scrolls sideways. */}
           <ul className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:scroll-px-0 md:px-0">
-            {movie.cast.map((person) => (
+            {movie.cast.map((person, index) => (
               <li
-                key={`${person.name}-${person.character}`}
+                // TMDB can list one actor twice under the same role; the order never changes.
+                key={index}
                 className="w-24 shrink-0 snap-start"
               >
                 <div className="relative aspect-2/3 overflow-hidden rounded-lg bg-muted">
