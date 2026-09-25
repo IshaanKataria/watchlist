@@ -31,7 +31,8 @@ export function EntryActions({ entry }: { entry: WatchlistItem }) {
     });
   }
 
-  // Undo re-adds the film and, if it was watched, restores its rating.
+  // Undo re-adds the film and re-applies its rating. The server stamps fresh added_at and
+  // watched_at (members can't write either), so it returns at the top of its tab.
   async function restore() {
     const added = await mutate("POST", "/api/watchlist", {
       tmdbId: entry.tmdbId,

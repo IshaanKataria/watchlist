@@ -3,8 +3,7 @@ import { z } from "zod";
 
 const errorSchema = z.object({ error: z.object({ message: z.string() }) });
 
-// Sends a mutation to the app's own API. Failures are toasted with the server's
-// message, so callers only handle success.
+// Failures are toasted with the server's message, so callers only handle success.
 export async function mutate(
   method: "POST" | "PATCH" | "DELETE",
   path: string,
