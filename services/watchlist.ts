@@ -74,3 +74,39 @@ export async function listEntries(userId: string) {
     .throwOnError();
   return data.map(toWatchlistItemDto);
 }
+
+export async function getEntry(userId: string, tmdbId: number) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("watchlist_entries")
+    .select("status, rating")
+    .eq("user_id", userId)
+    .eq("tmdb_id", tmdbId)
+    .maybeSingle()
+    .throwOnError();
+  return data;
+}
+
+// Pairs each film with the member's entry, or null, so a result list can offer Add or show status.
+export async function withEntries<T extends { tmdbId: number }>(
+  userId: string,
+  movies: T[],
+) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("watchlist_entries")
+    .select("tmdb_id, status, rating")
+    .eq("user_id", userId)
+    .in(
+      "tmdb_id",
+      movies.map((movie) => movie.tmdbId),
+    )
+    .throwOnError();
+  const entries = new Map(
+    data.map(({ tmdb_id, status, rating }) => [tmdb_id, { status, rating }]),
+  );
+  return movies.map((movie) => ({
+    ...movie,
+    entry: entries.get(movie.tmdbId) ?? null,
+  }));
+}
