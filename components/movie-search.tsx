@@ -11,6 +11,11 @@ import { movieSummarySchema, type MovieSummary } from "@/services/dto";
 
 const responseSchema = z.object({ results: z.array(movieSummarySchema) });
 
+const score = new Intl.NumberFormat("en", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
 // movies is null when the request failed.
 type Result = { q: string; movies: MovieSummary[] | null };
 
@@ -108,5 +113,12 @@ function SearchResults({
       </p>
     );
   }
-  return <PosterGrid movies={result.movies} />;
+  return (
+    <PosterGrid
+      movies={result.movies}
+      chip={(movie) =>
+        movie.voteAverage > 0 ? score.format(movie.voteAverage) : null
+      }
+    />
+  );
 }
