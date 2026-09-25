@@ -1,12 +1,9 @@
 import { createServerClient, type SetAllCookies } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PREFIXES = ["/login", "/auth/"];
-
 function redirectTarget(pathname: string, signedIn: boolean) {
-  if (!signedIn && !PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) {
-    return "/login";
-  }
+  const isPublic = pathname === "/login" || pathname.startsWith("/auth/");
+  if (!signedIn && !isPublic) return "/login";
   if (signedIn && pathname === "/login") return "/search";
   return null;
 }
