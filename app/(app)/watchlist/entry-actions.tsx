@@ -2,9 +2,10 @@
 
 import { EllipsisVerticalIcon, Trash2Icon, Undo2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { RatingSheet } from "@/components/rating-sheet";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,6 +19,7 @@ import type { WatchlistItem } from "@/services/dto";
 export function EntryActions({ entry }: { entry: WatchlistItem }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [rateOpen, setRateOpen] = useState(false);
   const path = `/api/watchlist/${entry.tmdbId}`;
 
   // The lists are server-rendered, so a refresh moves the card once the API agrees.
@@ -53,6 +55,23 @@ export function EntryActions({ entry }: { entry: WatchlistItem }) {
 
   return (
     <div className="flex gap-2">
+      <Button
+        disabled={pending}
+        onClick={() => setRateOpen(true)}
+        className="h-11 flex-1 px-2"
+      >
+        {entry.status === "watched" ? "Change rating" : "Mark watched"}
+      </Button>
+      <RatingSheet
+        title={entry.title}
+        open={rateOpen}
+        onOpenChange={setRateOpen}
+        initialRating={entry.rating}
+        canSkip={entry.status === "to_watch"}
+        onSave={(value) =>
+          run(() => mutate("PATCH", path, { status: "watched", rating: value }))
+        }
+      />
       <DropdownMenu>
         <DropdownMenuTrigger
           disabled={pending}
@@ -61,7 +80,7 @@ export function EntryActions({ entry }: { entry: WatchlistItem }) {
               variant="outline"
               size="icon"
               aria-label={`More actions for ${entry.title}`}
-              className="ml-auto size-11"
+              className="size-11"
             />
           }
         >
