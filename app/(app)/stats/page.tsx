@@ -53,7 +53,13 @@ export default async function StatsPage() {
       <div className="grid gap-8 lg:grid-cols-2">
         <section className="grid content-start gap-4">
           <h2 className="text-lg font-semibold">Genres</h2>
-          <GenreBars genres={stats.genres} />
+          {stats.genres.length > 0 ? (
+            <GenreBars genres={stats.genres} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              TMDB lists no genres for these films yet.
+            </p>
+          )}
         </section>
         <section className="grid content-start gap-4">
           <h2 className="text-lg font-semibold">Ratings</h2>
