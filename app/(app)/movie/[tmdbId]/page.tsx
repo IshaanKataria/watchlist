@@ -1,14 +1,7 @@
 import { notFound } from "next/navigation";
-import { z } from "zod";
 
 import { TmdbImage } from "@/components/tmdb-image";
-import { getMovie } from "@/lib/tmdb";
-
-// Digits only: coercion would also accept 1e3 or 0x3E8 and serve one film under many URLs.
-const tmdbIdSchema = z
-  .string()
-  .regex(/^[1-9]\d{0,9}$/)
-  .transform(Number);
+import { getMovie, tmdbIdParamSchema } from "@/lib/tmdb";
 
 function formatRuntime(minutes: number) {
   const hours = Math.floor(minutes / 60);
@@ -18,7 +11,7 @@ function formatRuntime(minutes: number) {
 export default async function MoviePage({
   params,
 }: PageProps<"/movie/[tmdbId]">) {
-  const tmdbId = tmdbIdSchema.safeParse((await params).tmdbId);
+  const tmdbId = tmdbIdParamSchema.safeParse((await params).tmdbId);
   if (!tmdbId.success) notFound();
   const movie = await getMovie(tmdbId.data);
   if (!movie) notFound();

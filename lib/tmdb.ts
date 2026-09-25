@@ -9,6 +9,13 @@ export const searchQuerySchema = z.object({
   q: z.string().trim().min(1).max(100),
 });
 
+// Route params arrive as strings. Digits only: coercion would also accept 1e3 or 0x3E8
+// and answer for one film at many URLs. Nine digits at most, so it fits an integer column.
+export const tmdbIdParamSchema = z
+  .string()
+  .regex(/^[1-9]\d{0,8}$/, "Expected a TMDB id")
+  .transform(Number);
+
 const movieSchema = z.object({
   id: z.number(),
   title: z.string(),
