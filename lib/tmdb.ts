@@ -47,11 +47,12 @@ const detailSchema = z.object({
   }),
 });
 
-function unavailable() {
+function unavailable(cause: unknown) {
   return new ApiError(
     502,
     "tmdb_unavailable",
     "TMDB is unavailable, try again shortly",
+    { cause },
   );
 }
 
@@ -65,14 +66,14 @@ async function tmdb<T extends z.ZodType>(
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${process.env.TMDB_READ_TOKEN}` },
     signal: AbortSignal.timeout(8000),
-  }).catch(() => {
-    throw unavailable();
+  }).catch((error: unknown) => {
+    throw unavailable(error);
   });
   if (res.status === 404) return null;
-  if (!res.ok) throw unavailable();
+  if (!res.ok) throw unavailable(`TMDB answered ${res.status} for ${path}`);
   const body: unknown = await res.json().catch(() => null);
   const parsed = schema.safeParse(body);
-  if (!parsed.success) throw unavailable();
+  if (!parsed.success) throw unavailable(parsed.error);
   return parsed.data;
 }
 
