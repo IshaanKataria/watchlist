@@ -24,3 +24,29 @@ export const movieSummarySchema = z.object({
 });
 
 export type MovieSummary = z.infer<typeof movieSummarySchema>;
+
+export function toEntryDto(
+  entry: Pick<Tables<"watchlist_entries">, "tmdb_id" | "status" | "rating">,
+) {
+  return { tmdbId: entry.tmdb_id, status: entry.status, rating: entry.rating };
+}
+
+export function toWatchlistItemDto({
+  status,
+  rating,
+  movie,
+}: Pick<Tables<"watchlist_entries">, "status" | "rating"> & {
+  movie: Pick<
+    Tables<"movies">,
+    "tmdb_id" | "title" | "release_year" | "poster_path"
+  >;
+}) {
+  return {
+    tmdbId: movie.tmdb_id,
+    title: movie.title,
+    year: movie.release_year,
+    posterPath: movie.poster_path,
+    status,
+    rating,
+  };
+}
