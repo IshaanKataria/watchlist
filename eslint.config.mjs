@@ -41,6 +41,11 @@ export default defineConfig([
     extends: [tseslint.configs.disableTypeChecked],
   },
   {
+    // CLI scripts report progress on stdout.
+    files: ["scripts/**"],
+    rules: { "no-console": "off" },
+  },
+  {
     // Vendored shadcn primitives; splitting them would fight `shadcn add` updates.
     files: ["components/ui/**"],
     rules: { "max-lines": "off" },

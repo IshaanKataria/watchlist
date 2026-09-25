@@ -18,7 +18,7 @@
     "knip": "knip",
     "db:push": "supabase db push",
     "db:types": "supabase gen types typescript --linked > /tmp/database.types.ts && mv /tmp/database.types.ts lib/supabase/database.types.ts && prettier --write lib/supabase/database.types.ts",
-    "seed": "node --env-file=.env.local scripts/seed.ts",
+    "seed": "node --env-file=.env.local scripts/seed.mts",
     "e2e": "playwright test"
   },
   "dependencies": {
