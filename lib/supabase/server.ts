@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import type { Database } from "./database.types";
 
@@ -27,11 +28,12 @@ export async function createClient() {
   );
 }
 
-export async function getUserId() {
+// Cached per request: the (app) layout and its page both check the session.
+export const getUserId = cache(async () => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   return data?.claims.sub ?? null;
-}
+});
 
 // Pages render in parallel with the (app) layout, so each one checks the session itself.
 export async function requireUserId() {
