@@ -62,6 +62,7 @@ export function MovieSearch({ initialQuery }: { initialQuery: string }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search films by title"
+          maxLength={100}
           className="h-11 pl-9"
         />
       </label>
