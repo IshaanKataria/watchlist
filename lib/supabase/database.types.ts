@@ -141,6 +141,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      watchlist_entries: {
+        Row: {
+          added_at: string;
+          id: string;
+          rating: number | null;
+          status: Database["public"]["Enums"]["watch_status"];
+          tmdb_id: number;
+          user_id: string;
+          watched_at: string | null;
+        };
+        Insert: {
+          added_at?: string;
+          id?: string;
+          rating?: number | null;
+          status?: Database["public"]["Enums"]["watch_status"];
+          tmdb_id: number;
+          user_id: string;
+          watched_at?: string | null;
+        };
+        Update: {
+          added_at?: string;
+          id?: string;
+          rating?: number | null;
+          status?: Database["public"]["Enums"]["watch_status"];
+          tmdb_id?: number;
+          user_id?: string;
+          watched_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "watchlist_entries_tmdb_id_fkey";
+            columns: ["tmdb_id"];
+            isOneToOne: false;
+            referencedRelation: "movies";
+            referencedColumns: ["tmdb_id"];
+          },
+          {
+            foreignKeyName: "watchlist_entries_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -149,7 +194,7 @@ export type Database = {
       reserved_handles: { Args: never; Returns: string[] };
     };
     Enums: {
-      [_ in never]: never;
+      watch_status: "to_watch" | "watched";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -279,6 +324,8 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      watch_status: ["to_watch", "watched"],
+    },
   },
 } as const;
