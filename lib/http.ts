@@ -3,13 +3,17 @@ import { z } from "zod";
 import { getUserId } from "@/lib/supabase/server";
 
 export class ApiError extends Error {
+  readonly retryAfter?: number;
+
+  // retryAfter (seconds) becomes a Retry-After header, for 429s.
   constructor(
     readonly status: number,
     readonly code: string,
     message: string,
-    options?: ErrorOptions,
+    options?: ErrorOptions & { retryAfter?: number },
   ) {
     super(message, options);
+    this.retryAfter = options?.retryAfter;
   }
 }
 
@@ -41,7 +45,11 @@ export function route<Context>(
         console.error(error);
       }
       if (error instanceof ApiError) {
-        return errorJson(error.status, error.code, error.message);
+        const res = errorJson(error.status, error.code, error.message);
+        if (error.retryAfter) {
+          res.headers.set("Retry-After", String(error.retryAfter));
+        }
+        return res;
       }
       return errorJson(500, "internal_error", "Something went wrong");
     }

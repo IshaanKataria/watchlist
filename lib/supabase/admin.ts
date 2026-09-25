@@ -4,7 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "./database.types";
 
-// Service role: bypasses RLS. Only services/movies.ts may use it, to write the shared movie cache.
+// Service role: bypasses RLS. Only services/ may use it, to write tables members can read but
+// never write: the shared movie cache (movies.ts) and taste profiles (taste.ts).
 export function createAdminClient() {
   return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
