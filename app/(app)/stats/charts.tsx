@@ -7,7 +7,7 @@ export function GenreBars({ genres }: Pick<Stats, "genres">) {
       {genres.map((genre) => (
         <li
           key={genre.name}
-          className="grid grid-cols-[7.5rem_1fr_2ch] items-center gap-3 text-sm"
+          className="grid grid-cols-[7.5rem_1fr_3ch] items-center gap-3 text-sm"
         >
           <span className="truncate">{genre.name}</span>
           <div className="h-2 rounded-full bg-muted">

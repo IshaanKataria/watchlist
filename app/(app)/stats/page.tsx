@@ -1,8 +1,6 @@
-import { cn } from "cn";
-import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
 import { requireUserId } from "@/lib/supabase/server";
 import { getStats } from "@/services/stats";
 
@@ -13,17 +11,11 @@ export default async function StatsPage() {
 
   if (stats.watchedCount === 0) {
     return (
-      <div className="grid justify-items-start gap-6">
+      <div className="grid gap-6">
         <h1 className="text-2xl font-semibold tracking-tight">Stats</h1>
-        <p className="text-sm text-muted-foreground">
+        <EmptyState>
           Mark films as watched and rate them to see your stats.
-        </p>
-        <Link
-          href="/search"
-          className={cn(buttonVariants({ variant: "outline" }), "h-11 px-5")}
-        >
-          Find a film
-        </Link>
+        </EmptyState>
       </div>
     );
   }
@@ -37,7 +29,7 @@ export default async function StatsPage() {
           value={stats.watchedCount}
           caption={
             stats.totalRuntimeMinutes > 0
-              ? `${formatRuntime(stats.totalRuntimeMinutes)} of film`
+              ? `${formatTotalRuntime(stats.totalRuntimeMinutes)} of film`
               : "Runtime unknown"
           }
         />
@@ -98,8 +90,8 @@ function Tile({
   );
 }
 
-// Days and hours once past a day, hours and minutes below it; zero units are dropped.
-function formatRuntime(total: number) {
+// A total can run to days, where minutes are noise, unlike a single film's runtime.
+function formatTotalRuntime(total: number) {
   const days = Math.floor(total / 1440);
   const hours = Math.floor(total / 60) % 24;
   const units = days > 0 ? { d: days, h: hours } : { h: hours, m: total % 60 };
