@@ -33,9 +33,9 @@ function PosterCard({ movie }: { movie: MovieSummary }) {
         )}
       </div>
       <div>
-        <h3 className="line-clamp-2 text-sm leading-snug font-medium">
+        <h2 className="line-clamp-2 text-sm leading-snug font-medium">
           {movie.title}
-        </h3>
+        </h2>
         {movie.year !== null && (
           <p className="text-xs text-muted-foreground">{movie.year}</p>
         )}
