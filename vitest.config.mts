@@ -6,6 +6,5 @@ export default defineConfig({
     environment: "node",
     // Playwright owns *.spec.ts under e2e/.
     include: ["**/*.test.ts"],
-    passWithNoTests: true,
   },
 });
