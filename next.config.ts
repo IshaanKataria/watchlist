@@ -2,7 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [new URL("https://image.tmdb.org/t/p/**")],
+    // TMDB's CDN already serves each image at fixed widths; re-encoding
+    // them through Vercel would only spend the image optimisation quota.
+    unoptimized: true,
   },
 };
 

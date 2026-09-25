@@ -7,8 +7,9 @@ export class ApiError extends Error {
     readonly status: number,
     readonly code: string,
     message: string,
+    options?: ErrorOptions,
   ) {
-    super(message);
+    super(message, options);
   }
 }
 
@@ -27,9 +28,6 @@ export function route<Context>(
     try {
       return await handler(req, ctx);
     } catch (error) {
-      if (error instanceof ApiError) {
-        return errorJson(error.status, error.code, error.message);
-      }
       if (error instanceof z.ZodError) {
         const summary = error.issues
           .map(({ path, message }) =>
@@ -38,8 +36,13 @@ export function route<Context>(
           .join("; ");
         return errorJson(400, "invalid_request", summary);
       }
-      // eslint-disable-next-line no-console -- unexpected failures must reach the server logs
-      console.error(error);
+      if (!(error instanceof ApiError) || error.status >= 500) {
+        // eslint-disable-next-line no-console -- server-side failures, and their cause, must reach the logs
+        console.error(error);
+      }
+      if (error instanceof ApiError) {
+        return errorJson(error.status, error.code, error.message);
+      }
       return errorJson(500, "internal_error", "Something went wrong");
     }
   };
