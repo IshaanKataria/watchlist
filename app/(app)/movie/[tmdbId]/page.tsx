@@ -4,7 +4,11 @@ import { z } from "zod";
 import { TmdbImage } from "@/components/tmdb-image";
 import { getMovie } from "@/lib/tmdb";
 
-const tmdbIdSchema = z.coerce.number().int().positive();
+// Digits only: coercion would also accept 1e3 or 0x3E8 and serve one film under many URLs.
+const tmdbIdSchema = z
+  .string()
+  .regex(/^[1-9]\d{0,9}$/)
+  .transform(Number);
 
 function formatRuntime(minutes: number) {
   const hours = Math.floor(minutes / 60);
