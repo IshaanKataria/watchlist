@@ -40,7 +40,7 @@ export function UserMenu({ me }: { me: MemberDto }) {
         <Avatar>
           {me.avatarUrl && <AvatarImage src={me.avatarUrl} alt="" />}
           <AvatarFallback>
-            {me.displayName.slice(0, 1).toUpperCase()}
+            {[...me.displayName][0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
