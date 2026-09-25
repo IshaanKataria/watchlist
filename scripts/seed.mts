@@ -1,15 +1,28 @@
 import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
+
+import members from "./seed-members.json" with { type: "json" };
+import type { Database, TablesInsert } from "../lib/supabase/database.types";
 
 // Published in the README as the demo login.
 const PASSWORD = "watchlist-demo";
+const DAY = 86_400_000;
 
-const MEMBERS = [
-  { handle: "demo", name: "Demo Viewer" },
-  { handle: "sam", name: "Sam Rivera" },
-  { handle: "mira", name: "Mira Chen" },
-];
+type Film = [title: string, year: number];
 
-const supabase = createClient(
+// demo rates character-driven drama high and blockbusters low, so the taste profile has a contrast to find.
+const MEMBERS = z
+  .array(
+    z.object({
+      handle: z.string(),
+      name: z.string(),
+      watched: z.array(z.tuple([z.string(), z.number(), z.number()])),
+      toWatch: z.array(z.tuple([z.string(), z.number()])),
+    }),
+  )
+  .parse(members);
+
+const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
   { auth: { persistSession: false, autoRefreshToken: false } },
@@ -29,4 +42,120 @@ for (const { handle, name } of MEMBERS) {
   });
   if (error && error.code !== "email_exists") throw error;
   console.log(`${handle}: ${error ? "already exists" : "created"}`);
+}
+
+// Mirrors lib/tmdb.ts and services/movies.ts: plain node resolves neither the @/ alias nor server-only.
+const searchSchema = z.object({
+  results: z.array(z.object({ id: z.number() })),
+});
+const movieSchema = z.object({
+  title: z.string(),
+  poster_path: z.string().nullable(),
+  backdrop_path: z.string().nullable(),
+  runtime: z.number().nullable(),
+  overview: z.string(),
+  genres: z.array(z.object({ id: z.number(), name: z.string() })),
+});
+
+async function tmdb(path: string, params: Record<string, string> = {}) {
+  const query = new URLSearchParams({ language: "en-US", ...params });
+  const res = await fetch(`https://api.themoviedb.org/3${path}?${query}`, {
+    headers: { Authorization: `Bearer ${process.env.TMDB_READ_TOKEN}` },
+  });
+  if (!res.ok) throw new Error(`TMDB answered ${res.status} for ${path}`);
+  const body: unknown = await res.json();
+  return body;
+}
+
+const ignoreDuplicates = { ignoreDuplicates: true };
+const tmdbIds = new Map<string, number>();
+
+async function cacheFilm([title, year]: Film) {
+  const key = `${title} (${year})`;
+  const cached = tmdbIds.get(key);
+  if (cached) return cached;
+  const { results } = searchSchema.parse(
+    await tmdb("/search/movie", {
+      query: title,
+      primary_release_year: String(year),
+    }),
+  );
+  const id = results[0]?.id;
+  if (!id) throw new Error(`No TMDB match for ${key}`);
+  const movie = movieSchema.parse(await tmdb(`/movie/${id}`));
+  await supabase
+    .from("movies")
+    .upsert(
+      {
+        tmdb_id: id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        backdrop_path: movie.backdrop_path,
+        release_year: year,
+        runtime_minutes: movie.runtime,
+        overview: movie.overview,
+      },
+      ignoreDuplicates,
+    )
+    .throwOnError();
+  await supabase
+    .from("genres")
+    .upsert(movie.genres, ignoreDuplicates)
+    .throwOnError();
+  await supabase
+    .from("movie_genres")
+    .upsert(
+      movie.genres.map((genre) => ({ tmdb_id: id, genre_id: genre.id })),
+      ignoreDuplicates,
+    )
+    .throwOnError();
+  console.log(`${key} → ${id} ${movie.title}`);
+  tmdbIds.set(key, id);
+  return id;
+}
+
+const { data: profiles } = await supabase
+  .from("profiles")
+  .select("id, handle")
+  .in(
+    "handle",
+    MEMBERS.map((member) => member.handle),
+  )
+  .throwOnError();
+
+// Replaces each member's list, so a rerun restores exactly this state. Dates step back three days per
+// film and are offset per member, so a feed of their activity interleaves.
+for (const [offset, member] of MEMBERS.entries()) {
+  const userId = profiles.find(({ handle }) => handle === member.handle)?.id;
+  if (!userId) throw new Error(`No profile for ${member.handle}`);
+  const daysAgo = (index: number) =>
+    new Date(Date.now() - (index * 3 + offset) * DAY).toISOString();
+  const rows: TablesInsert<"watchlist_entries">[] = [];
+  for (const [index, [title, year, rating]] of member.watched.entries()) {
+    rows.push({
+      user_id: userId,
+      tmdb_id: await cacheFilm([title, year]),
+      status: "watched",
+      rating,
+      added_at: daysAgo(index),
+      watched_at: daysAgo(index),
+    });
+  }
+  for (const [index, film] of member.toWatch.entries()) {
+    rows.push({
+      user_id: userId,
+      tmdb_id: await cacheFilm(film),
+      status: "to_watch",
+      added_at: daysAgo(index),
+    });
+  }
+  await supabase
+    .from("watchlist_entries")
+    .delete()
+    .eq("user_id", userId)
+    .throwOnError();
+  await supabase.from("watchlist_entries").insert(rows).throwOnError();
+  console.log(
+    `${member.handle}: ${member.watched.length} watched, ${member.toWatch.length} to watch`,
+  );
 }

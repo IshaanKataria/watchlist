@@ -7,12 +7,25 @@ import { z } from "zod";
 import { PosterGrid, PosterGridSkeleton } from "@/components/poster-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { movieSummarySchema, type MovieSummary } from "@/services/dto";
+import { WatchlistButton } from "@/components/watchlist-button";
+import { entrySchema, movieSummarySchema } from "@/services/dto";
 
-const responseSchema = z.object({ results: z.array(movieSummarySchema) });
+const responseSchema = z.object({
+  results: z.array(
+    movieSummarySchema.extend({ entry: entrySchema.nullable() }),
+  ),
+});
+
+const score = new Intl.NumberFormat("en", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
 
 // movies is null when the request failed.
-type Result = { q: string; movies: MovieSummary[] | null };
+type Result = {
+  q: string;
+  movies: z.infer<typeof responseSchema>["results"] | null;
+};
 
 async function search(q: string, signal: AbortSignal) {
   const res = await fetch(`/api/movies/search?${new URLSearchParams({ q })}`, {
@@ -83,7 +96,7 @@ function SearchResults({
   if (!q) {
     return (
       <p className="text-sm text-muted-foreground">
-        Find a film, then open it to see the details.
+        Find a film to add it to your watchlist.
       </p>
     );
   }
@@ -108,5 +121,19 @@ function SearchResults({
       </p>
     );
   }
-  return <PosterGrid movies={result.movies} />;
+  return (
+    <PosterGrid
+      movies={result.movies}
+      chip={(movie) =>
+        movie.voteAverage > 0 ? score.format(movie.voteAverage) : null
+      }
+      action={(movie) => (
+        <WatchlistButton
+          tmdbId={movie.tmdbId}
+          title={movie.title}
+          initialEntry={movie.entry}
+        />
+      )}
+    />
+  );
 }

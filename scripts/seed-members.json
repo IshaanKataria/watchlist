@@ -1,0 +1,80 @@
+[
+  {
+    "handle": "demo",
+    "name": "Demo Viewer",
+    "watched": [
+      ["The Godfather", 1972, 10],
+      ["Parasite", 2019, 9],
+      ["Whiplash", 2014, 9],
+      ["Past Lives", 2023, 9],
+      ["Manchester by the Sea", 2016, 8],
+      ["The Social Network", 2010, 8],
+      ["Marriage Story", 2019, 8],
+      ["Spotlight", 2015, 8],
+      ["Fight Club", 1999, 7],
+      ["Inception", 2010, 6],
+      ["Jurassic World", 2015, 4],
+      ["Fast & Furious 6", 2013, 3],
+      ["Transformers", 2007, 3],
+      ["Black Adam", 2022, 2]
+    ],
+    "toWatch": [
+      ["Aftersun", 2022],
+      ["Anatomy of a Fall", 2023],
+      ["The Holdovers", 2023],
+      ["Oppenheimer", 2023]
+    ]
+  },
+  {
+    "handle": "sam",
+    "name": "Sam Rivera",
+    "watched": [
+      ["The Thing", 1982, 10],
+      ["Alien", 1979, 9],
+      ["Blade Runner", 1982, 9],
+      ["The Shining", 1980, 9],
+      ["Hereditary", 2018, 9],
+      ["Get Out", 2017, 9],
+      ["Aliens", 1986, 8],
+      ["Arrival", 2016, 8],
+      ["Annihilation", 2018, 8],
+      ["Ex Machina", 2015, 8],
+      ["It Follows", 2015, 7],
+      ["Event Horizon", 1997, 6],
+      ["Prometheus", 2012, 5],
+      ["The Notebook", 2004, 3],
+      ["Mamma Mia!", 2008, 2]
+    ],
+    "toWatch": [
+      ["Nope", 2022],
+      ["Talk to Me", 2023],
+      ["Dune: Part Two", 2024],
+      ["The Fly", 1986]
+    ]
+  },
+  {
+    "handle": "mira",
+    "name": "Mira Chen",
+    "watched": [
+      ["Moonlight", 2016, 10],
+      ["Aftersun", 2022, 10],
+      ["Lady Bird", 2017, 9],
+      ["The Florida Project", 2017, 9],
+      ["Minari", 2021, 9],
+      ["Everything Everywhere All at Once", 2022, 9],
+      ["The Lighthouse", 2019, 8],
+      ["First Reformed", 2018, 8],
+      ["Uncut Gems", 2019, 7],
+      ["The Green Knight", 2021, 7],
+      ["Midsommar", 2019, 6],
+      ["Avengers: Endgame", 2019, 4],
+      ["Transformers: Age of Extinction", 2014, 2]
+    ],
+    "toWatch": [
+      ["Past Lives", 2023],
+      ["Priscilla", 2023],
+      ["The Zone of Interest", 2023],
+      ["Civil War", 2024]
+    ]
+  }
+]

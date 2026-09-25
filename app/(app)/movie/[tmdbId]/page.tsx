@@ -1,14 +1,10 @@
 import { notFound } from "next/navigation";
-import { z } from "zod";
 
 import { TmdbImage } from "@/components/tmdb-image";
-import { getMovie } from "@/lib/tmdb";
-
-// Digits only: coercion would also accept 1e3 or 0x3E8 and serve one film under many URLs.
-const tmdbIdSchema = z
-  .string()
-  .regex(/^[1-9]\d{0,9}$/)
-  .transform(Number);
+import { WatchlistButton } from "@/components/watchlist-button";
+import { requireUserId } from "@/lib/supabase/server";
+import { getMovie, tmdbIdParamSchema } from "@/lib/tmdb";
+import { getEntry } from "@/services/watchlist";
 
 function formatRuntime(minutes: number) {
   const hours = Math.floor(minutes / 60);
@@ -18,9 +14,13 @@ function formatRuntime(minutes: number) {
 export default async function MoviePage({
   params,
 }: PageProps<"/movie/[tmdbId]">) {
-  const tmdbId = tmdbIdSchema.safeParse((await params).tmdbId);
+  const tmdbId = tmdbIdParamSchema.safeParse((await params).tmdbId);
   if (!tmdbId.success) notFound();
-  const movie = await getMovie(tmdbId.data);
+  const userId = await requireUserId();
+  const [movie, entry] = await Promise.all([
+    getMovie(tmdbId.data),
+    getEntry(userId, tmdbId.data),
+  ]);
   if (!movie) notFound();
 
   const facts = [
@@ -50,11 +50,16 @@ export default async function MoviePage({
           <div className="relative aspect-2/3 w-28 shrink-0 overflow-hidden rounded-lg shadow-2xl sm:w-36 md:w-48">
             <TmdbImage path={movie.posterPath} size="w500" preload />
           </div>
-          <div className="grid min-w-0 gap-2">
+          <div className="grid min-w-0 justify-items-start gap-2">
             <h1 className="text-2xl font-semibold tracking-tight text-balance md:text-4xl">
               {movie.title}
             </h1>
             <p className="text-sm text-muted-foreground">{facts}</p>
+            <WatchlistButton
+              tmdbId={movie.tmdbId}
+              title={movie.title}
+              initialEntry={entry}
+            />
           </div>
         </div>
       </section>

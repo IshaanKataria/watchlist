@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getMovie, searchMovies } from "./tmdb";
+import { getMovie, searchMovies, tmdbIdParamSchema } from "./tmdb";
 
 const dune = {
   id: 438631,
@@ -103,4 +103,17 @@ describe("getMovie", () => {
     respond({ status_message: "not found" }, 404);
     expect(await getMovie(999999999)).toBeNull();
   });
+});
+
+describe("tmdbIdParamSchema", () => {
+  it("parses a canonical id", () => {
+    expect(tmdbIdParamSchema.parse("438631")).toBe(438631);
+  });
+
+  it.each(["0", "007", "1e3", "0x3E8", "12a", "-1", "", "2147483648"])(
+    "rejects %j",
+    (id) => {
+      expect(tmdbIdParamSchema.safeParse(id).success).toBe(false);
+    },
+  );
 });

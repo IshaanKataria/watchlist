@@ -1,15 +1,12 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { NavLinks } from "@/components/nav-links";
 import { UserMenu } from "@/components/user-menu";
-import { getUserId } from "@/lib/supabase/server";
+import { requireUserId } from "@/lib/supabase/server";
 import { getProfile } from "@/services/profiles";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
-  const userId = await getUserId();
-  if (!userId) redirect("/login");
-  const me = await getProfile(userId);
+  const me = await getProfile(await requireUserId());
 
   return (
     <>

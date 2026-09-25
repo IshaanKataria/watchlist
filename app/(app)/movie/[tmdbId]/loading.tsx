@@ -9,6 +9,7 @@ export default function MovieLoading() {
         <div className="grid flex-1 gap-2">
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-11 w-24 rounded-lg" />
         </div>
       </div>
       <div className="grid max-w-prose gap-2">
