@@ -1,9 +1,5 @@
-import { cn } from "cn";
-import Link from "next/link";
-import type { ReactNode } from "react";
-
+import { EmptyState } from "@/components/empty-state";
 import { PosterGrid } from "@/components/poster-grid";
-import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { requireUserId } from "@/lib/supabase/server";
 import { listEntries } from "@/services/watchlist";
@@ -32,7 +28,7 @@ export default async function WatchlistPage() {
               action={(entry) => <EntryActions entry={entry} />}
             />
           ) : (
-            <EmptyTab>Nothing on your list yet.</EmptyTab>
+            <EmptyState>Nothing on your list yet.</EmptyState>
           )}
         </TabsContent>
         <TabsContent value="watched">
@@ -43,24 +39,10 @@ export default async function WatchlistPage() {
               action={(entry) => <EntryActions entry={entry} />}
             />
           ) : (
-            <EmptyTab>Films you mark as watched show up here.</EmptyTab>
+            <EmptyState>Films you mark as watched show up here.</EmptyState>
           )}
         </TabsContent>
       </Tabs>
-    </div>
-  );
-}
-
-function EmptyTab({ children }: { children: ReactNode }) {
-  return (
-    <div className="grid justify-items-start gap-3">
-      <p className="text-sm text-muted-foreground">{children}</p>
-      <Link
-        href="/search"
-        className={cn(buttonVariants({ variant: "outline" }), "h-11 px-5")}
-      >
-        Find a film
-      </Link>
     </div>
   );
 }

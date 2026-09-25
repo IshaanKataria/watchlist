@@ -60,3 +60,26 @@ export function toWatchlistItemDto({
 }
 
 export type WatchlistItem = ReturnType<typeof toWatchlistItemDto>;
+
+const countSchema = z.number().int().nonnegative();
+
+// Parses user_stats() jsonb: the Data API types it as Json, so the shape is checked here once.
+export const statsSchema = z
+  .object({
+    watched_count: countSchema,
+    rated_count: countSchema,
+    average_rating: z.number().nullable(),
+    total_runtime_minutes: countSchema,
+    genres: z.array(z.object({ name: z.string(), count: countSchema })),
+    rating_histogram: z.array(countSchema).length(10),
+  })
+  .transform((stats) => ({
+    watchedCount: stats.watched_count,
+    ratedCount: stats.rated_count,
+    averageRating: stats.average_rating,
+    totalRuntimeMinutes: stats.total_runtime_minutes,
+    genres: stats.genres,
+    ratingHistogram: stats.rating_histogram,
+  }));
+
+export type Stats = z.output<typeof statsSchema>;
