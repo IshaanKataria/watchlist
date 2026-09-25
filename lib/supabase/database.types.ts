@@ -192,6 +192,7 @@ export type Database = {
     };
     Functions: {
       reserved_handles: { Args: never; Returns: string[] };
+      user_stats: { Args: { target: string }; Returns: Json };
     };
     Enums: {
       watch_status: "to_watch" | "watched";
