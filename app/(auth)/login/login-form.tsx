@@ -18,6 +18,7 @@ export function EmailForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   // would wipe the email after a failed attempt.
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
     const form = new FormData(event.currentTarget);
     const email = form.get("email");
     const password = form.get("password");
@@ -85,6 +86,7 @@ export function GoogleButton({ oauthFailed }: { oauthFailed: boolean }) {
   const [pending, startTransition] = useTransition();
 
   function signIn() {
+    setError(null);
     startTransition(async () => {
       const { error } = await createClient().auth.signInWithOAuth({
         provider: "google",
