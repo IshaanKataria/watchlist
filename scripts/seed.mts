@@ -114,25 +114,29 @@ async function cacheFilm([title, year]: Film) {
   return id;
 }
 
-const { data: profiles } = await supabase
-  .from("profiles")
-  .select("id, handle")
-  .in(
-    "handle",
-    MEMBERS.map((member) => member.handle),
-  )
-  .throwOnError();
+// By email, not handle: members can rename themselves in the app, and a handle given up can be
+// taken by another account.
+const { data, error: listError } = await supabase.auth.admin.listUsers({
+  perPage: 1000,
+});
+if (listError) throw listError;
 
 function profileId(handle: string) {
-  const id = profiles.find((profile) => profile.handle === handle)?.id;
-  if (!id) throw new Error(`No profile for ${handle}`);
+  const email = `${handle}@example.com`;
+  const id = data.users.find((user) => user.email === email)?.id;
+  if (!id) throw new Error(`No account for ${email}`);
   return id;
 }
 
-// Replaces each member's list, so a rerun restores exactly this state. Dates step back three days per
-// film and are offset per member, so a feed of their activity interleaves.
+// Restores each member's handle, name and list, so a rerun undoes anything changed in the app. Dates
+// step back three days per film and are offset per member, so a feed of their activity interleaves.
 for (const [offset, member] of MEMBERS.entries()) {
   const userId = profileId(member.handle);
+  await supabase
+    .from("profiles")
+    .update({ handle: member.handle, display_name: member.name })
+    .eq("id", userId)
+    .throwOnError();
   const daysAgo = (index: number) =>
     new Date(Date.now() - (index * 3 + offset) * DAY).toISOString();
   const rows: TablesInsert<"watchlist_entries">[] = [];
