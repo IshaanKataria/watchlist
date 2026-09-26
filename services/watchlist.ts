@@ -1,6 +1,6 @@
 import { ApiError } from "@/lib/http";
 import { createClient } from "@/lib/supabase/server";
-import { searchMovies } from "@/lib/tmdb";
+import { getMovie, searchMovies } from "@/lib/tmdb";
 
 import { toEntryDto, toWatchlistItemDto } from "./dto";
 import { cacheMovie } from "./movies";
@@ -76,16 +76,20 @@ export async function listEntries(userId: string) {
   return data.map(toWatchlistItemDto);
 }
 
-export async function getEntry(userId: string, tmdbId: number) {
+// TMDB's details with the member's entry, or null when TMDB has no such film.
+export async function getMovieWithEntry(userId: string, tmdbId: number) {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("watchlist_entries")
-    .select("tmdb_id, status, rating")
-    .eq("user_id", userId)
-    .eq("tmdb_id", tmdbId)
-    .maybeSingle()
-    .throwOnError();
-  return data && toEntryDto(data);
+  const [movie, { data }] = await Promise.all([
+    getMovie(tmdbId),
+    supabase
+      .from("watchlist_entries")
+      .select("tmdb_id, status, rating")
+      .eq("user_id", userId)
+      .eq("tmdb_id", tmdbId)
+      .maybeSingle()
+      .throwOnError(),
+  ]);
+  return movie && { ...movie, entry: data && toEntryDto(data) };
 }
 
 // TMDB results paired with the member's entry, or null, so each can offer Add or show its status.

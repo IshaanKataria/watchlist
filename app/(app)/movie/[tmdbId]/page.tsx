@@ -3,8 +3,7 @@ import { notFound } from "next/navigation";
 import { TmdbImage } from "@/components/tmdb-image";
 import { WatchlistButton } from "@/components/watchlist-button";
 import { requireUserId } from "@/lib/supabase/server";
-import { getMovie } from "@/lib/tmdb";
-import { getEntry } from "@/services/watchlist";
+import { getMovieWithEntry } from "@/services/watchlist";
 import { tmdbIdParamSchema } from "@/services/watchlist.schema";
 
 function formatRuntime(minutes: number) {
@@ -15,13 +14,10 @@ function formatRuntime(minutes: number) {
 export default async function MoviePage({
   params,
 }: PageProps<"/movie/[tmdbId]">) {
+  const userId = await requireUserId();
   const tmdbId = tmdbIdParamSchema.safeParse((await params).tmdbId);
   if (!tmdbId.success) notFound();
-  const userId = await requireUserId();
-  const [movie, entry] = await Promise.all([
-    getMovie(tmdbId.data),
-    getEntry(userId, tmdbId.data),
-  ]);
+  const movie = await getMovieWithEntry(userId, tmdbId.data);
   if (!movie) notFound();
 
   const facts = [
@@ -59,7 +55,7 @@ export default async function MoviePage({
             <WatchlistButton
               tmdbId={movie.tmdbId}
               title={movie.title}
-              initialEntry={entry}
+              initialEntry={movie.entry}
             />
           </div>
         </div>
