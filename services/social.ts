@@ -19,8 +19,8 @@ export async function listFollowing() {
   return data.map(toMemberDto);
 }
 
-// follow_member() and unfollow_member() raise no_data_found (P0002) for an unknown handle and
-// invalid_parameter_value (22023) for the caller's own; anything else stays a 500.
+// follow_member() and unfollow_member() raise no_data_found (P0002) for an unknown handle, and
+// follow_member() raises invalid_parameter_value (22023) for the caller's own; anything else is a 500.
 export function followError(error: PostgrestError) {
   if (error.code === "P0002") {
     return new ApiError(404, "member_not_found", "No member has that handle");

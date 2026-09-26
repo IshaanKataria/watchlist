@@ -12,12 +12,12 @@ create index follows_followee_idx on public.follows (followee_id);
 
 -- Closed to members entirely: even an own-row select would hand followee ids to the browser, which
 -- holds the session token. RLS with no policies denies every row, and the revoked grants keep the
--- table shut if a policy is ever added by mistake. All access goes through the functions below.
+-- table shut if a policy is ever added by mistake. Members reach it only through the functions below.
 alter table public.follows enable row level security;
 revoke all on public.follows from anon, authenticated;
 
 -- security definer (below): profiles and follows are closed to members, so these run as the owner.
--- Each takes a handle, acts as auth.uid() and returns no ids.
+-- Each acts as auth.uid(), addresses other members by handle and returns no ids.
 
 -- Discovery: any member finds others by handle or display name, with their own follow state.
 create function public.search_members(q text)
