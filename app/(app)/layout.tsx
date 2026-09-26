@@ -23,7 +23,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <Link
             href="/search"
             aria-label="Watchlist home"
-            className="mr-4 hidden font-semibold tracking-tight md:block"
+            className="mr-4 hidden h-11 items-center font-semibold tracking-tight md:flex"
           >
             Watchlist
           </Link>
