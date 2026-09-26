@@ -123,11 +123,16 @@ const { data: profiles } = await supabase
   )
   .throwOnError();
 
+function profileId(handle: string) {
+  const id = profiles.find((profile) => profile.handle === handle)?.id;
+  if (!id) throw new Error(`No profile for ${handle}`);
+  return id;
+}
+
 // Replaces each member's list, so a rerun restores exactly this state. Dates step back three days per
 // film and are offset per member, so a feed of their activity interleaves.
 for (const [offset, member] of MEMBERS.entries()) {
-  const userId = profiles.find(({ handle }) => handle === member.handle)?.id;
-  if (!userId) throw new Error(`No profile for ${member.handle}`);
+  const userId = profileId(member.handle);
   const daysAgo = (index: number) =>
     new Date(Date.now() - (index * 3 + offset) * DAY).toISOString();
   const rows: TablesInsert<"watchlist_entries">[] = [];
@@ -159,3 +164,22 @@ for (const [offset, member] of MEMBERS.entries()) {
     `${member.handle}: ${member.watched.length} watched, ${member.toWatch.length} to watch`,
   );
 }
+
+// demo follows the other two, so its feed has their activity. Replaced like the lists, so a rerun
+// also undoes follows made while trying the app.
+const demoId = profileId("demo");
+await supabase
+  .from("follows")
+  .delete()
+  .eq("follower_id", demoId)
+  .throwOnError();
+await supabase
+  .from("follows")
+  .insert(
+    ["sam", "mira"].map((handle) => ({
+      follower_id: demoId,
+      followee_id: profileId(handle),
+    })),
+  )
+  .throwOnError();
+console.log("demo: follows sam and mira");
