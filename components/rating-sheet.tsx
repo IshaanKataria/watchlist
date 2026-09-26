@@ -79,16 +79,11 @@ export function RatingSheet({
         ))}
       </fieldset>
       <div className="grid gap-2 md:flex md:justify-end">
-        <Button type="submit" className="h-11 px-6 md:order-last">
+        <Button type="submit" className="md:order-last">
           Save
         </Button>
         {canSkip && (
-          <Button
-            type="button"
-            variant="ghost"
-            className="h-11"
-            onClick={() => save()}
-          >
+          <Button type="button" variant="ghost" onClick={() => save()}>
             Skip rating
           </Button>
         )}

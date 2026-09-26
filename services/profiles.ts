@@ -40,7 +40,7 @@ export async function getProfile(userId: string) {
     .from("profiles")
     .select("handle, display_name, avatar_url")
     .eq("id", userId)
-    .single()
+    .maybeSingle()
     .throwOnError();
-  return toMemberDto(data);
+  return data && toMemberDto(data);
 }

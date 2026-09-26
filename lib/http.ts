@@ -40,18 +40,19 @@ export function route<Context>(
           .join("; ");
         return errorJson(400, "invalid_request", summary);
       }
-      if (!(error instanceof ApiError) || error.status >= 500) {
+      const apiError =
+        error instanceof ApiError
+          ? error
+          : new ApiError(500, "internal_error", "Something went wrong");
+      if (apiError.status >= 500) {
         // eslint-disable-next-line no-console -- server-side failures, and their cause, must reach the logs
         console.error(error);
       }
-      if (error instanceof ApiError) {
-        const res = errorJson(error.status, error.code, error.message);
-        if (error.retryAfter) {
-          res.headers.set("Retry-After", String(error.retryAfter));
-        }
-        return res;
+      const res = errorJson(apiError.status, apiError.code, apiError.message);
+      if (apiError.retryAfter) {
+        res.headers.set("Retry-After", String(apiError.retryAfter));
       }
-      return errorJson(500, "internal_error", "Something went wrong");
+      return res;
     }
   };
 }
@@ -64,7 +65,16 @@ export async function requireUser() {
   return { id };
 }
 
+// Cross-site requests can't set this header without a CORS preflight, which this app never grants.
 export async function parseJson<T extends z.ZodType>(req: Request, schema: T) {
+  const type = req.headers.get("content-type")?.split(";")[0]?.trim();
+  if (type?.toLowerCase() !== "application/json") {
+    throw new ApiError(
+      415,
+      "unsupported_media_type",
+      "Send the body as application/json",
+    );
+  }
   const body: unknown = await req.json().catch(() => {
     throw new ApiError(400, "invalid_json", "Request body must be valid JSON");
   });

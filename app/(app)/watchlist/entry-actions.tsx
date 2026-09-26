@@ -59,7 +59,7 @@ export function EntryActions({ entry }: { entry: WatchlistItem }) {
       <Button
         disabled={pending}
         onClick={() => setRateOpen(true)}
-        className="h-11 flex-1 px-2"
+        className="flex-1 px-2"
       >
         {entry.status === "watched" ? "Change rating" : "Mark watched"}
         <span className="sr-only">, {entry.title}</span>
@@ -82,7 +82,6 @@ export function EntryActions({ entry }: { entry: WatchlistItem }) {
               variant="outline"
               size="icon"
               aria-label={`More actions for ${entry.title}`}
-              className="size-11"
             />
           }
         >
@@ -91,7 +90,6 @@ export function EntryActions({ entry }: { entry: WatchlistItem }) {
         <DropdownMenuContent align="end" className="w-auto min-w-52">
           {entry.status === "watched" && (
             <DropdownMenuItem
-              className="h-11"
               onClick={() =>
                 run(() => mutate("PATCH", path, { status: "to_watch" }))
               }
@@ -100,11 +98,7 @@ export function EntryActions({ entry }: { entry: WatchlistItem }) {
               Move back to watchlist
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem
-            variant="destructive"
-            className="h-11"
-            onClick={remove}
-          >
+          <DropdownMenuItem variant="destructive" onClick={remove}>
             <Trash2Icon />
             Remove
           </DropdownMenuItem>

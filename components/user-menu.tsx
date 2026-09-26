@@ -54,7 +54,7 @@ export function UserMenu({ me }: { me: MemberDto }) {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => void signOut()} className="h-11">
+        <DropdownMenuItem onClick={() => void signOut()}>
           <LogOutIcon />
           Sign out
         </DropdownMenuItem>

@@ -83,7 +83,7 @@ function ProfileView({ profile }: { profile: Profile }) {
               {/* The title links to the same page, so the poster stays out of the tab order. */}
               <Link
                 href={`/movie/${rec.tmdbId}`}
-                aria-hidden
+                aria-label={rec.title}
                 tabIndex={-1}
                 className="relative aspect-2/3 w-24 shrink-0 overflow-hidden rounded-lg bg-muted"
               >

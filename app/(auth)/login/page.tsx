@@ -15,7 +15,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           </p>
         </div>
         <Tabs defaultValue="sign-in">
-          <TabsList className="w-full group-data-horizontal/tabs:h-11">
+          <TabsList className="w-full">
             <TabsTrigger value="sign-in">Sign in</TabsTrigger>
             <TabsTrigger value="sign-up">Create account</TabsTrigger>
           </TabsList>

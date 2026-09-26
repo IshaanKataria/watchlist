@@ -40,6 +40,9 @@ export const entrySchema = z.object({
 
 export type EntryDto = z.infer<typeof entrySchema>;
 
+// The columns toEntryDto reads, selected as one literal so the typed client checks them.
+export const ENTRY_COLUMNS = "tmdb_id, status, rating";
+
 export function toEntryDto(
   entry: Pick<Tables<"watchlist_entries">, "tmdb_id" | "status" | "rating">,
 ): EntryDto {

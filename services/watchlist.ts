@@ -1,8 +1,8 @@
 import { ApiError } from "@/lib/http";
 import { createClient } from "@/lib/supabase/server";
-import { searchMovies } from "@/lib/tmdb";
+import { getMovie, searchMovies } from "@/lib/tmdb";
 
-import { toEntryDto, toWatchlistItemDto } from "./dto";
+import { ENTRY_COLUMNS, toEntryDto, toWatchlistItemDto } from "./dto";
 import { cacheMovie } from "./movies";
 import type { EntryUpdate } from "./watchlist.schema";
 
@@ -12,7 +12,7 @@ export async function addEntry(userId: string, tmdbId: number) {
   const { data, error } = await supabase
     .from("watchlist_entries")
     .insert({ user_id: userId, tmdb_id: tmdbId })
-    .select("tmdb_id, status, rating")
+    .select(ENTRY_COLUMNS)
     .single();
   if (error?.code === "23505") {
     throw new ApiError(
@@ -37,7 +37,7 @@ export async function updateEntry(
     .update(update)
     .eq("user_id", userId)
     .eq("tmdb_id", tmdbId)
-    .select("tmdb_id, status, rating")
+    .select(ENTRY_COLUMNS)
     .maybeSingle()
     .throwOnError();
   if (!data) {
@@ -76,16 +76,20 @@ export async function listEntries(userId: string) {
   return data.map(toWatchlistItemDto);
 }
 
-export async function getEntry(userId: string, tmdbId: number) {
+// TMDB's details with the member's entry, or null when TMDB has no such film.
+export async function getMovieWithEntry(userId: string, tmdbId: number) {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("watchlist_entries")
-    .select("tmdb_id, status, rating")
-    .eq("user_id", userId)
-    .eq("tmdb_id", tmdbId)
-    .maybeSingle()
-    .throwOnError();
-  return data && toEntryDto(data);
+  const [movie, { data }] = await Promise.all([
+    getMovie(tmdbId),
+    supabase
+      .from("watchlist_entries")
+      .select(ENTRY_COLUMNS)
+      .eq("user_id", userId)
+      .eq("tmdb_id", tmdbId)
+      .maybeSingle()
+      .throwOnError(),
+  ]);
+  return movie && { ...movie, entry: data && toEntryDto(data) };
 }
 
 // TMDB results paired with the member's entry, or null, so each can offer Add or show its status.
@@ -95,7 +99,7 @@ export async function searchWithEntries(userId: string, q: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("watchlist_entries")
-    .select("tmdb_id, status, rating")
+    .select(ENTRY_COLUMNS)
     .eq("user_id", userId)
     .in(
       "tmdb_id",
