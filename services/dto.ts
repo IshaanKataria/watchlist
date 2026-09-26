@@ -25,6 +25,13 @@ export const movieSummarySchema = z.object({
 
 export type MovieSummary = z.infer<typeof movieSummarySchema>;
 
+// Also parses taste_profiles.recommendations, which the Data API types as Json.
+export const recommendationSchema = movieSummarySchema
+  .pick({ tmdbId: true, title: true, year: true, posterPath: true })
+  .extend({ reason: z.string() });
+
+export type Recommendation = z.infer<typeof recommendationSchema>;
+
 export const entrySchema = z.object({
   tmdbId: z.number(),
   status: z.enum(Constants.public.Enums.watch_status),

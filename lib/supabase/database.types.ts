@@ -141,6 +141,38 @@ export type Database = {
         };
         Relationships: [];
       };
+      taste_profiles: {
+        Row: {
+          generated_at: string;
+          input_hash: string;
+          recommendations: Json;
+          summary: string;
+          user_id: string;
+        };
+        Insert: {
+          generated_at?: string;
+          input_hash: string;
+          recommendations: Json;
+          summary: string;
+          user_id: string;
+        };
+        Update: {
+          generated_at?: string;
+          input_hash?: string;
+          recommendations?: Json;
+          summary?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "taste_profiles_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       watchlist_entries: {
         Row: {
           added_at: string;

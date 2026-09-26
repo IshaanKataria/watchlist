@@ -1,3 +1,5 @@
+import { ChevronRightIcon } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { EmptyState } from "@/components/empty-state";
@@ -46,6 +48,18 @@ export default async function StatsPage() {
           caption={`of ${stats.watchedCount} watched`}
         />
       </dl>
+      <Link
+        href="/taste"
+        className="flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors outline-none hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        <span className="grid gap-1">
+          <span className="font-medium">Taste profile</span>
+          <span className="text-sm text-muted-foreground">
+            A critic&apos;s read on your ratings, and films to watch next.
+          </span>
+        </span>
+        <ChevronRightIcon className="size-5 shrink-0 text-muted-foreground" />
+      </Link>
       <div className="grid gap-8 lg:grid-cols-2">
         <section className="grid content-start gap-4">
           <h2 className="text-lg font-semibold">Genres</h2>
