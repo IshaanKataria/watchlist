@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { NavLinks } from "@/components/nav-links";
 import { UserMenu } from "@/components/user-menu";
@@ -7,6 +8,9 @@ import { getProfile } from "@/services/profiles";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const me = await getProfile(await requireUserId());
+  // A still-valid session whose user was deleted: its cookies must be cleared, or the proxy
+  // bounces /login straight back here.
+  if (!me) redirect("/auth/signout");
 
   return (
     <>
