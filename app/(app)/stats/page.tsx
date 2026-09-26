@@ -55,7 +55,7 @@ export default async function StatsPage() {
         <span className="grid gap-1">
           <span className="font-medium">Taste profile</span>
           <span className="text-sm text-muted-foreground">
-            A critic&apos;s read on your ratings, and five films to watch next.
+            A critic&apos;s read on your ratings, and films to watch next.
           </span>
         </span>
         <ChevronRightIcon className="size-5 shrink-0 text-muted-foreground" />

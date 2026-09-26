@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { TasteSkeleton } from "./generate-profile";
+import { TasteSkeleton } from "./taste-skeleton";
 
 export default function TasteLoading() {
   return (

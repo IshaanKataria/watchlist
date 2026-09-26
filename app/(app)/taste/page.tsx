@@ -36,7 +36,7 @@ function TasteBody({ ratedCount, profile }: Taste) {
     return (
       <GenerateProfile
         label="Write my profile"
-        hint="A critic's read on your ratings, and five films to watch next."
+        hint="A critic's read on your ratings, and films to watch next."
       />
     );
   }
