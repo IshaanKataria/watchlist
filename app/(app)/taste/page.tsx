@@ -10,6 +10,7 @@ import { MIN_RATED } from "@/services/taste.prompt";
 import { GenerateProfile } from "./generate-profile";
 
 type Taste = Awaited<ReturnType<typeof getTasteProfile>>;
+type Profile = NonNullable<Taste["profile"]>;
 
 export default async function TastePage() {
   const taste = await getTasteProfile(await requireUserId());
@@ -39,14 +40,11 @@ function TasteBody({ ratedCount, profile }: Taste) {
       />
     );
   }
-  if (profile.upToDate || !canGenerate) {
+  const note = profileNote(profile, canGenerate);
+  if (note) {
     return (
       <div className="grid gap-8">
-        <p className="text-sm text-muted-foreground">
-          {profile.upToDate
-            ? "Up to date with your list. Rate or add a film to refresh it."
-            : `Rate at least ${MIN_RATED} films to refresh it.`}
-        </p>
+        <p className="text-sm text-muted-foreground">{note}</p>
         <ProfileView profile={profile} />
       </div>
     );
@@ -61,7 +59,19 @@ function TasteBody({ ratedCount, profile }: Taste) {
   );
 }
 
-function ProfileView({ profile }: { profile: NonNullable<Taste["profile"]> }) {
+// Why a saved profile can't be regenerated right now, or null when it can.
+function profileNote(profile: Profile, canGenerate: boolean) {
+  if (profile.upToDate) {
+    return "Up to date with your list. Rate or add a film to refresh it.";
+  }
+  if (!canGenerate) return `Rate at least ${MIN_RATED} films to refresh it.`;
+  if (profile.refreshesIn) {
+    return `Your list has changed. You can regenerate ${profile.refreshesIn}.`;
+  }
+  return null;
+}
+
+function ProfileView({ profile }: { profile: Profile }) {
   return (
     <div className="grid gap-8">
       <p className="max-w-prose text-lg leading-relaxed text-pretty">

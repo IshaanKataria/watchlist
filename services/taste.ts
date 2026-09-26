@@ -19,6 +19,17 @@ import {
 
 const COOLDOWN_MS = 60 * 60 * 1000;
 
+// Time left before a saved profile may regenerate, or null once it may.
+function cooldown(generatedAt: number) {
+  const ms = generatedAt + COOLDOWN_MS - Date.now();
+  if (ms <= 0) return null;
+  const minutes = Math.ceil(ms / 60_000);
+  return {
+    seconds: Math.ceil(ms / 1000),
+    label: new Intl.RelativeTimeFormat("en").format(minutes, "minute"),
+  };
+}
+
 function aiUnavailable(cause: unknown) {
   return new ApiError(
     502,
@@ -140,14 +151,13 @@ export async function generateTasteProfile(userId: string) {
   if (saved?.inputHash === history.hash) {
     return { summary: saved.summary, recommendations: saved.recommendations };
   }
-  const wait = saved ? saved.generatedAt + COOLDOWN_MS - Date.now() : 0;
-  if (wait > 0) {
-    const minutes = Math.ceil(wait / 60_000);
+  const wait = saved && cooldown(saved.generatedAt);
+  if (wait) {
     throw new ApiError(
       429,
       "cooldown",
-      `Profiles refresh at most once an hour. Try again ${new Intl.RelativeTimeFormat("en").format(minutes, "minute")}.`,
-      { retryAfter: Math.ceil(wait / 1000) },
+      `Profiles refresh at most once an hour. Try again ${wait.label}.`,
+      { retryAfter: wait.seconds },
     );
   }
 
@@ -190,6 +200,8 @@ export async function getTasteProfile(userId: string) {
         entry: history.entries.get(rec.tmdbId) ?? null,
       })),
       upToDate: saved.inputHash === history.hash,
+      // Stands in for Regenerate while a changed list waits out the cooldown.
+      refreshesIn: cooldown(saved.generatedAt)?.label ?? null,
     },
   };
 }
