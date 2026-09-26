@@ -20,7 +20,10 @@ export function MemberList({ members }: { members: MemberResult[] }) {
               @{member.handle}
             </p>
           </div>
+          {/* Keyed on the server's answer: a repeated search first shows its last results, then
+              fresh ones, which must replace any state a button kept from before. */}
           <FollowButton
+            key={String(member.isFollowing)}
             handle={member.handle}
             initialFollowing={member.isFollowing}
           />

@@ -84,7 +84,7 @@ function SearchResults({
   result: Result | null;
   onRetry: () => void;
 }) {
-  // Results for an older query never render: a skeleton stands in until the current one answers.
+  // Results for another query never render: a skeleton stands in until the current one answers.
   if (result?.q !== q) return <MemberListSkeleton />;
   if (!result.members) {
     return (
