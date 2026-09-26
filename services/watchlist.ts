@@ -2,7 +2,7 @@ import { ApiError } from "@/lib/http";
 import { createClient } from "@/lib/supabase/server";
 import { getMovie, searchMovies } from "@/lib/tmdb";
 
-import { toEntryDto, toWatchlistItemDto } from "./dto";
+import { ENTRY_COLUMNS, toEntryDto, toWatchlistItemDto } from "./dto";
 import { cacheMovie } from "./movies";
 import type { EntryUpdate } from "./watchlist.schema";
 
@@ -12,7 +12,7 @@ export async function addEntry(userId: string, tmdbId: number) {
   const { data, error } = await supabase
     .from("watchlist_entries")
     .insert({ user_id: userId, tmdb_id: tmdbId })
-    .select("tmdb_id, status, rating")
+    .select(ENTRY_COLUMNS)
     .single();
   if (error?.code === "23505") {
     throw new ApiError(
@@ -37,7 +37,7 @@ export async function updateEntry(
     .update(update)
     .eq("user_id", userId)
     .eq("tmdb_id", tmdbId)
-    .select("tmdb_id, status, rating")
+    .select(ENTRY_COLUMNS)
     .maybeSingle()
     .throwOnError();
   if (!data) {
@@ -83,7 +83,7 @@ export async function getMovieWithEntry(userId: string, tmdbId: number) {
     getMovie(tmdbId),
     supabase
       .from("watchlist_entries")
-      .select("tmdb_id, status, rating")
+      .select(ENTRY_COLUMNS)
       .eq("user_id", userId)
       .eq("tmdb_id", tmdbId)
       .maybeSingle()
@@ -99,7 +99,7 @@ export async function searchWithEntries(userId: string, q: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("watchlist_entries")
-    .select("tmdb_id, status, rating")
+    .select(ENTRY_COLUMNS)
     .eq("user_id", userId)
     .in(
       "tmdb_id",

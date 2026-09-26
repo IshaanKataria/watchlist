@@ -95,7 +95,7 @@ async function resolve({ title, year, reason }: Suggestion) {
 async function suggest(prompt: string, abortSignal: AbortSignal) {
   try {
     const { output } = await generateText({
-      model: anthropic(process.env.AI_MODEL ?? "claude-sonnet-5"),
+      model: anthropic(process.env.AI_MODEL),
       instructions,
       prompt,
       output: Output.object({ schema: draftSchema }),
