@@ -1,6 +1,6 @@
 import { json, requireUser, route } from "@/lib/http";
-import { searchQuerySchema } from "@/lib/tmdb";
 import { searchWithEntries } from "@/services/watchlist";
+import { searchQuerySchema } from "@/services/watchlist.schema";
 
 export const GET = route(async (req) => {
   const user = await requireUser();

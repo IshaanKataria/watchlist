@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { TmdbImage } from "@/components/tmdb-image";
 import { WatchlistButton } from "@/components/watchlist-button";
 import { requireUserId } from "@/lib/supabase/server";
-import { getMovie, tmdbIdParamSchema } from "@/lib/tmdb";
+import { getMovie } from "@/lib/tmdb";
 import { getEntry } from "@/services/watchlist";
+import { tmdbIdParamSchema } from "@/services/watchlist.schema";
 
 function formatRuntime(minutes: number) {
   const hours = Math.floor(minutes / 60);

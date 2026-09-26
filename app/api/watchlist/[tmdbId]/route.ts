@@ -1,7 +1,9 @@
 import { json, parseJson, requireUser, route } from "@/lib/http";
-import { tmdbIdParamSchema } from "@/lib/tmdb";
 import { removeEntry, updateEntry } from "@/services/watchlist";
-import { updateEntrySchema } from "@/services/watchlist.schema";
+import {
+  tmdbIdParamSchema,
+  updateEntrySchema,
+} from "@/services/watchlist.schema";
 
 type Context = RouteContext<"/api/watchlist/[tmdbId]">;
 

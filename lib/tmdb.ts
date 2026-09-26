@@ -5,21 +5,6 @@ import type { MovieSummary } from "@/services/dto";
 
 const API_URL = "https://api.themoviedb.org/3";
 
-export const searchQuerySchema = z.object({
-  q: z.string().trim().min(1).max(100),
-});
-
-// TMDB ids key integer columns.
-export const tmdbIdSchema = z.int32().positive();
-
-// Route params arrive as strings. Digits only: coercion would also accept 1e3 or 0x3E8
-// and answer for one film at many URLs.
-export const tmdbIdParamSchema = z
-  .string()
-  .regex(/^[1-9]\d*$/, "Expected a TMDB id")
-  .transform(Number)
-  .pipe(tmdbIdSchema);
-
 const movieSchema = z.object({
   id: z.number(),
   title: z.string(),

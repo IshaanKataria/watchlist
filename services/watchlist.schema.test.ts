@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { addEntrySchema, updateEntrySchema } from "./watchlist.schema";
+import {
+  addEntrySchema,
+  tmdbIdParamSchema,
+  updateEntrySchema,
+} from "./watchlist.schema";
 
 describe("addEntrySchema", () => {
   it("accepts a positive integer id", () => {
@@ -48,4 +52,17 @@ describe("updateEntrySchema", () => {
       status: "to_watch",
     });
   });
+});
+
+describe("tmdbIdParamSchema", () => {
+  it("parses a canonical id", () => {
+    expect(tmdbIdParamSchema.parse("438631")).toBe(438631);
+  });
+
+  it.each(["0", "007", "1e3", "0x3E8", "12a", "-1", "", "2147483648"])(
+    "rejects %j",
+    (id) => {
+      expect(tmdbIdParamSchema.safeParse(id).success).toBe(false);
+    },
+  );
 });
