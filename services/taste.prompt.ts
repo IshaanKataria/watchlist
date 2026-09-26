@@ -39,8 +39,8 @@ type Film = {
 const label = (film: Film) =>
   film.year ? `${film.title} (${film.year})` : film.title;
 
-// films arrive most recently watched first. The hash covers exactly the prompt, so a cached
-// profile goes stale only when what the model would be sent changes.
+// films arrive most recently watched first. The hash covers exactly what the model is sent,
+// instructions included, so a cached profile goes stale only when that changes.
 export function buildInput(films: Film[]) {
   const rated = films.filter((film) => film.rating !== null);
   const prompt = [
@@ -57,7 +57,10 @@ export function buildInput(films: Film[]) {
   return {
     ratedCount: rated.length,
     prompt,
-    hash: createHash("sha256").update(prompt).digest("hex"),
+    hash: createHash("sha256")
+      .update(instructions)
+      .update(prompt)
+      .digest("hex"),
   };
 }
 
