@@ -1,5 +1,5 @@
 import { anthropic } from "@ai-sdk/anthropic";
-import { generateText, Output } from "ai";
+import { generateText, NoObjectGeneratedError, Output } from "ai";
 import { z } from "zod";
 
 import { ApiError } from "@/lib/http";
@@ -90,7 +90,9 @@ async function resolve({ title, year, reason }: Suggestion) {
   );
 }
 
-// result.output is a getter that throws when the model gave no output, so it is read inside the try.
+// result.output is a getter that throws when the model gave no output, so it is read inside the
+// try. A draft that breaks the schema (a seventh film, an overlong reason) returns null and gets
+// the same single retry as one TMDB can't match; anything else, the timeout included, is a 502.
 async function suggest(prompt: string, abortSignal: AbortSignal) {
   try {
     const { output } = await generateText({
@@ -102,6 +104,7 @@ async function suggest(prompt: string, abortSignal: AbortSignal) {
     });
     return output;
   } catch (cause) {
+    if (NoObjectGeneratedError.isInstance(cause)) return null;
     throw aiUnavailable(cause);
   }
 }
@@ -112,6 +115,7 @@ async function draft(
   abortSignal: AbortSignal,
 ) {
   const output = await suggest(prompt, abortSignal);
+  if (!output) return null;
   const recommendations = pickRecommendations(
     await Promise.all(output.recommendations.map(resolve)),
     listed,
@@ -154,7 +158,9 @@ export async function generateTasteProfile(userId: string) {
     (await draft(history.prompt, listed, signal)) ??
     (await draft(history.prompt, listed, signal));
   if (!profile) {
-    throw aiUnavailable("TMDB matched fewer than 3 recommendations twice");
+    throw aiUnavailable(
+      "two drafts in a row broke the schema or matched too few films",
+    );
   }
   await createAdminClient()
     .from("taste_profiles")
