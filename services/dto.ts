@@ -28,9 +28,11 @@ export const memberResultSchema = memberSchema.extend({
   isFollowing: z.boolean(),
 });
 
+export type MemberResult = z.infer<typeof memberResultSchema>;
+
 export function toMemberResultDto(
   row: MemberColumns & { is_following: boolean },
-) {
+): MemberResult {
   return { ...toMemberDto(row), isFollowing: row.is_following };
 }
 
