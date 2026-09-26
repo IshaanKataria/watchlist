@@ -8,7 +8,8 @@ import { tmdbIdParamSchema } from "@/services/watchlist.schema";
 
 function formatRuntime(minutes: number) {
   const hours = Math.floor(minutes / 60);
-  return hours ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
+  const rest = minutes % 60;
+  return [hours && `${hours}h`, rest && `${rest}m`].filter(Boolean).join(" ");
 }
 
 export default async function MoviePage({
