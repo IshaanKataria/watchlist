@@ -4,8 +4,7 @@ import Image from "next/image";
 
 type Size = "w185" | "w342" | "w500" | "w1280";
 
-// Fills its positioned parent. Every TMDB image sits beside the title or name
-// it shows, so the alt text stays empty rather than repeating it.
+// alt="" because every caller renders the title or name beside it; image-only links name themselves.
 export function TmdbImage({
   path,
   size,
