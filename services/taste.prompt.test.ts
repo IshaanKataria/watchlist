@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Recommendation } from "./dto";
-import { buildInput, pickRecommendations } from "./taste.prompt";
+import { buildInput, cooldown, pickRecommendations } from "./taste.prompt";
 
 const film = (title: string, rating: number | null, genres = ["Drama"]) => ({
   title,
@@ -74,5 +74,22 @@ describe("pickRecommendations", () => {
     expect(
       pickRecommendations([1, 2, 3, 4, 5, 6].map(rec), new Set()),
     ).toHaveLength(5);
+  });
+});
+
+describe("cooldown", () => {
+  it("counts down in whole seconds", () => {
+    expect(cooldown(0, 17_700)).toEqual({
+      seconds: 43,
+      label: "in 43 seconds",
+    });
+  });
+
+  it("says 1 second, not 0, for the last partial second", () => {
+    expect(cooldown(0, 59_500)?.label).toBe("in 1 second");
+  });
+
+  it("lifts after a minute", () => {
+    expect(cooldown(0, 60_000)).toBeNull();
   });
 });

@@ -53,6 +53,7 @@ function TasteBody({ ratedCount, profile }: Taste) {
     <GenerateProfile
       label="Regenerate"
       hint="Your list has changed since this profile."
+      cooldown={profile.cooldown}
     >
       <ProfileView profile={profile} />
     </GenerateProfile>
@@ -65,9 +66,6 @@ function profileNote(profile: Profile, canGenerate: boolean) {
     return "Up to date with your list. Rate or add a film to refresh it.";
   }
   if (!canGenerate) return `Rate at least ${MIN_RATED} films to refresh it.`;
-  if (profile.refreshesIn) {
-    return `Your list has changed. You can regenerate ${profile.refreshesIn}.`;
-  }
   return null;
 }
 

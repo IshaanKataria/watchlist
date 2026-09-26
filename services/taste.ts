@@ -10,25 +10,13 @@ import { searchMovies } from "@/lib/tmdb";
 import { recommendationSchema, toEntryDto } from "./dto";
 import {
   buildInput,
+  cooldown,
   draftSchema,
   instructions,
   MIN_RATED,
   pickRecommendations,
   type Suggestion,
 } from "./taste.prompt";
-
-const COOLDOWN_MS = 60 * 60 * 1000;
-
-// Time left before a saved profile may regenerate, or null once it may.
-function cooldown(generatedAt: number) {
-  const ms = generatedAt + COOLDOWN_MS - Date.now();
-  if (ms <= 0) return null;
-  const minutes = Math.ceil(ms / 60_000);
-  return {
-    seconds: Math.ceil(ms / 1000),
-    label: new Intl.RelativeTimeFormat("en").format(minutes, "minute"),
-  };
-}
 
 function aiUnavailable(cause: unknown) {
   return new ApiError(
@@ -138,7 +126,7 @@ async function draft(
 }
 
 // Unchanged input returns the saved profile without a model call. Changed input regenerates
-// at most once an hour, which bounds what toggling a rating can cost.
+// at most once a minute, which stops repeated clicks from each paying for a model call.
 export async function generateTasteProfile(userId: string) {
   const [history, saved] = await Promise.all([
     loadHistory(userId),
@@ -154,12 +142,12 @@ export async function generateTasteProfile(userId: string) {
   if (saved?.inputHash === history.hash) {
     return { summary: saved.summary, recommendations: saved.recommendations };
   }
-  const wait = saved && cooldown(saved.generatedAt);
+  const wait = saved && cooldown(saved.generatedAt, Date.now());
   if (wait) {
     throw new ApiError(
       429,
       "cooldown",
-      `Profiles refresh at most once an hour. Try again ${wait.label}.`,
+      `Profiles refresh at most once a minute. Try again ${wait.label}.`,
       { retryAfter: wait.seconds },
     );
   }
@@ -203,8 +191,7 @@ export async function getTasteProfile(userId: string) {
         entry: history.entries.get(rec.tmdbId) ?? null,
       })),
       upToDate: saved.inputHash === history.hash,
-      // Stands in for Regenerate while a changed list waits out the cooldown.
-      refreshesIn: cooldown(saved.generatedAt)?.label ?? null,
+      cooldown: cooldown(saved.generatedAt, Date.now()),
     },
   };
 }

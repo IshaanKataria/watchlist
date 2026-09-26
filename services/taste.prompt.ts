@@ -5,6 +5,8 @@ import { z } from "zod";
 import type { Recommendation } from "./dto";
 
 export const MIN_RATED = 3;
+// Long enough to stop repeated clicks, short enough that Regenerate never looks broken.
+const COOLDOWN_MS = 60_000;
 // Recent ratings say enough about a taste, and the cap bounds what one generation costs.
 const MAX_RATED = 60;
 
@@ -77,4 +79,15 @@ export function pickRecommendations(
     }
   }
   return picked.size < 3 ? null : [...picked.values()].slice(0, 5);
+}
+
+// Time left before a saved profile may regenerate, as whole seconds and as "in 42 seconds",
+// or null once it may.
+export function cooldown(generatedAt: number, now: number) {
+  const seconds = Math.ceil((generatedAt + COOLDOWN_MS - now) / 1000);
+  if (seconds <= 0) return null;
+  return {
+    seconds,
+    label: new Intl.RelativeTimeFormat("en").format(seconds, "second"),
+  };
 }
