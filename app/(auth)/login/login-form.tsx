@@ -50,7 +50,6 @@ export function EmailForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           type="email"
           autoComplete="email"
           required
-          className="h-11"
         />
       </div>
       <div className="grid gap-2">
@@ -64,7 +63,6 @@ export function EmailForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           }
           minLength={6}
           required
-          className="h-11"
         />
       </div>
       {error && (
@@ -72,7 +70,7 @@ export function EmailForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           {error}
         </p>
       )}
-      <Button type="submit" disabled={pending} className="h-11">
+      <Button type="submit" disabled={pending}>
         {mode === "sign-in" ? "Sign in" : "Create account"}
       </Button>
     </form>
@@ -103,7 +101,6 @@ export function GoogleButton({ oauthFailed }: { oauthFailed: boolean }) {
         variant="outline"
         disabled={pending}
         onClick={signIn}
-        className="h-11"
       >
         Continue with Google
       </Button>

@@ -48,11 +48,7 @@ export function GenerateProfile({
               ? `${hint} You can regenerate ${wait}.`
               : hint}
         </p>
-        <Button
-          onClick={generate}
-          disabled={pending || wait !== null}
-          className="h-11 px-5"
-        >
+        <Button onClick={generate} disabled={pending || wait !== null}>
           {pending ? "Writing…" : label}
         </Button>
       </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "cn";
 import { CheckIcon, PlusIcon, StarIcon } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -33,7 +32,7 @@ export function WatchlistButton({
 
   if (!entry) {
     return (
-      <Button onClick={add} disabled={pending} className="h-11 px-4">
+      <Button onClick={add} disabled={pending}>
         <PlusIcon />
         Add
         <span className="sr-only">, {title}</span>
@@ -41,10 +40,7 @@ export function WatchlistButton({
     );
   }
   return (
-    <Link
-      href="/watchlist"
-      className={cn(buttonVariants({ variant: "outline" }), "h-11 px-4")}
-    >
+    <Link href="/watchlist" className={buttonVariants({ variant: "outline" })}>
       {entry.status === "to_watch" ? (
         <>
           <CheckIcon />

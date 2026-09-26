@@ -15,7 +15,7 @@ export default async function WatchlistPage() {
     <div className="grid gap-6">
       <h1 className="text-2xl font-semibold tracking-tight">Watchlist</h1>
       <Tabs defaultValue="to_watch" className="gap-6">
-        <TabsList className="w-full group-data-horizontal/tabs:h-11 sm:w-72">
+        <TabsList className="w-full sm:w-72">
           <TabsTrigger value="to_watch">
             To watch ({toWatch.length})
           </TabsTrigger>

@@ -1,4 +1,3 @@
-import { cn } from "cn";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -16,10 +15,7 @@ export function EmptyState({
   return (
     <div className="grid justify-items-start gap-3">
       <p className="text-sm text-muted-foreground">{children}</p>
-      <Link
-        href={href}
-        className={cn(buttonVariants({ variant: "outline" }), "h-11 px-5")}
-      >
+      <Link href={href} className={buttonVariants({ variant: "outline" })}>
         {label}
       </Link>
     </div>

@@ -76,7 +76,7 @@ export function MovieSearch({ initialQuery }: { initialQuery: string }) {
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search films by title"
           maxLength={100}
-          className="h-11 pl-9"
+          className="pl-9"
         />
       </label>
       <SearchResults q={q} result={result} onRetry={retry} />
@@ -108,7 +108,7 @@ function SearchResults({
         <p className="text-sm">
           Couldn&apos;t reach TMDB. Try again in a moment.
         </p>
-        <Button variant="outline" onClick={onRetry} className="h-11 px-5">
+        <Button variant="outline" onClick={onRetry}>
           Retry
         </Button>
       </div>

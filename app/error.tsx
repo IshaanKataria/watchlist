@@ -9,7 +9,7 @@ export default function ErrorPage({ retry }: { retry: () => void }) {
       <p className="text-sm text-muted-foreground">
         This page couldn&apos;t load. Check your connection and try again.
       </p>
-      <Button onClick={retry} className="mx-auto h-11 px-6">
+      <Button onClick={retry} className="mx-auto">
         Try again
       </Button>
     </main>

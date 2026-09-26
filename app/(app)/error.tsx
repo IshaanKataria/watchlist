@@ -13,9 +13,7 @@ export default function AppError({ retry }: { retry: () => void }) {
       <p className="text-sm text-muted-foreground">
         This page couldn&apos;t load. Check your connection and try again.
       </p>
-      <Button onClick={retry} className="h-11 px-6">
-        Try again
-      </Button>
+      <Button onClick={retry}>Try again</Button>
     </div>
   );
 }
