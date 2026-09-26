@@ -8,6 +8,7 @@ import { PosterGrid, PosterGridSkeleton } from "@/components/poster-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WatchlistButton } from "@/components/watchlist-button";
+import { errorMessage } from "@/lib/api";
 import { entrySchema, movieSummarySchema } from "@/services/dto";
 
 const responseSchema = z.object({
@@ -21,19 +22,17 @@ const score = new Intl.NumberFormat("en", {
   maximumFractionDigits: 1,
 });
 
-// movies is null when the request failed.
-type Result = {
-  q: string;
-  movies: z.infer<typeof responseSchema>["results"] | null;
-};
-
 async function search(q: string, signal: AbortSignal) {
   const res = await fetch(`/api/movies/search?${new URLSearchParams({ q })}`, {
     signal,
-  });
-  if (!res.ok) return null;
-  return responseSchema.parse(await res.json()).results;
+  }).catch(() => null);
+  const body: unknown = await res?.json().catch(() => null);
+  const data = responseSchema.safeParse(body);
+  if (res?.ok && data.success) return { movies: data.data.results };
+  return { error: errorMessage(body) };
 }
+
+type Result = { q: string } & Awaited<ReturnType<typeof search>>;
 
 export function MovieSearch({ initialQuery }: { initialQuery: string }) {
   const [query, setQuery] = useState(initialQuery);
@@ -50,8 +49,8 @@ export function MovieSearch({ initialQuery }: { initialQuery: string }) {
 
     const controller = new AbortController();
     async function load() {
-      const movies = await search(q, controller.signal).catch(() => null);
-      if (!controller.signal.aborted) setResult({ q, movies });
+      const found = await search(q, controller.signal);
+      if (!controller.signal.aborted) setResult({ q, ...found });
     }
     const timer = setTimeout(() => void load(), 300);
     return () => {
@@ -105,9 +104,7 @@ function SearchResults({
   if (!result.movies) {
     return (
       <div role="alert" className="grid justify-items-start gap-3">
-        <p className="text-sm">
-          Couldn&apos;t reach TMDB. Try again in a moment.
-        </p>
+        <p className="text-sm">{result.error}</p>
         <Button variant="outline" onClick={onRetry}>
           Retry
         </Button>
