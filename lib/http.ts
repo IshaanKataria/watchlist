@@ -64,7 +64,16 @@ export async function requireUser() {
   return { id };
 }
 
+// Cross-site requests can't set this header without a CORS preflight, which this app never grants.
 export async function parseJson<T extends z.ZodType>(req: Request, schema: T) {
+  const type = req.headers.get("content-type")?.split(";")[0]?.trim();
+  if (type?.toLowerCase() !== "application/json") {
+    throw new ApiError(
+      415,
+      "unsupported_media_type",
+      "Send the body as application/json",
+    );
+  }
   const body: unknown = await req.json().catch(() => {
     throw new ApiError(400, "invalid_json", "Request body must be valid JSON");
   });
