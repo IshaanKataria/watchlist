@@ -24,7 +24,7 @@ Project conventions. Next.js specifics: see `AGENTS.md` and the bundled docs in 
 2. Route handler = `route(async (req) => { const user = await requireUser(); const body = await parseJson(req, schema); return json(await service(user.id, body), 200) })`. Nothing else lives in a route file.
 3. The user id comes from the session. Never read `userId` / `user_id` from a request body, query or header.
 4. No UUIDs leave the server. Members are addressed by `handle`, watchlist entries by `tmdbId`. DTO mappers live in `services/dto.ts`.
-5. RLS is enabled on every table; a table without policies is a bug. Migrations are plain SQL in `supabase/migrations/`, one per feature, readable top to bottom.
+5. RLS is enabled on every table; a table without policies is a bug, unless every access goes through security definer functions and its migration says why (`follows`). Migrations are plain SQL in `supabase/migrations/`, one per feature, readable top to bottom.
 6. Every external call (TMDB, Anthropic) has a loading state and a visible error state.
 7. Server Components by default; `'use client'` only on interactive leaves (search box, rating input, follow button, drawer).
 8. Mobile-first: base styles target 375px; add `sm:` / `md:` / `lg:` upward. No fixed pixel widths on layout. Touch targets ≥ 44px. Dialogs become Drawers below `md`.
