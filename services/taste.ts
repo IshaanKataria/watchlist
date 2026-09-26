@@ -111,6 +111,9 @@ async function suggest(prompt: string, abortSignal: AbortSignal) {
       instructions,
       prompt,
       output: Output.object({ schema: draftSchema }),
+      // A measured draft is about 570 tokens; the headroom covers adaptive thinking, which
+      // counts toward the cap, so a longer answer isn't cut off mid-JSON.
+      maxOutputTokens: 2000,
       abortSignal,
     });
     return output;
