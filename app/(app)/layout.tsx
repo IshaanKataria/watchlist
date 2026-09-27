@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -31,9 +32,18 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <UserMenu me={me} />
         </nav>
       </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-24 md:pb-10">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-10">
         {children}
       </main>
+      {/* TMDB's terms ask for their logo and this notice. Below md the bottom padding clears the
+          fixed tab bar: its 4rem, a 1.5rem gap and the home indicator. */}
+      <footer className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] text-xs text-muted-foreground md:pb-6">
+        <Image src="/tmdb-logo.svg" alt="TMDB" width={92} height={12} />
+        <p>
+          This product uses the TMDB API but is not endorsed or certified by
+          TMDB.
+        </p>
+      </footer>
     </>
   );
 }

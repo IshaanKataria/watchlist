@@ -21,7 +21,7 @@ Next.js 16 (App Router, TypeScript) · Tailwind v4 + shadcn/ui on Base UI · Sup
 
 ## Run locally
 
-Needs Node 22.18+, pnpm and the Supabase CLI.
+Needs Node 22.18+ (`pnpm seed` runs TypeScript through Node's type stripping), pnpm and the Supabase CLI. Vercel builds on Node 22.x, set by `engines` in `package.json`.
 
 ```bash
 pnpm install
@@ -31,8 +31,6 @@ pnpm db:push                      # applies supabase/migrations
 pnpm seed                         # creates demo, sam and mira with a rated history (uses the service-role key)
 pnpm dev
 ```
-
-`pnpm check` runs typecheck, lint, the Prettier check and the unit tests; CI runs it on every push and pull request.
 
 ## Architecture
 
@@ -95,15 +93,34 @@ erDiagram
 
 ## Testing
 
-`pnpm test` runs Vitest over the pure logic:
+`pnpm check` runs typecheck, lint, the Prettier check and the unit tests; CI runs it on every push and pull request.
+
+**Unit** (`pnpm test`, Vitest) covers the pure logic:
 
 - Request schemas: TMDB ids, rating bounds (0, 11, 7.5 and "ten" are rejected), a spoofed user id dropped, non-canonical id params like `1e3` rejected
-- `parseJson`: non-JSON content types get a 415, a charset suffix is accepted
+- `parseJson` and `parseQuery`: non-JSON content types get a 415, a charset suffix is accepted, a bad query string is a 400
 - TMDB client: response mapping, the bearer token, 404 as null, failures as 502
 - `user_stats()` parsing, including an empty account
 - Taste profile: prompt hashing, recommendation picking, the regenerate countdown
-- Handle rules
+- Handles and the profile update: format, reserved names, a trimmed display name, an empty update rejected, fields members can't set dropped
+- Member search input: trimmed, a leading `@` dropped, `@` alone or over 40 characters rejected
+- Follow errors: an unknown handle maps to 404, following yourself to 400, anything else to 500
 - Feed cursor parsing (a Postgres timestamp passes back verbatim) and the feed, member profile and watched-film mappers
+
+**End to end** (`pnpm e2e`, Playwright) runs on Desktop Chrome and iPhone 14 (WebKit), one test at a time; the security spec is plain HTTP, so it runs on Desktop Chrome only:
+
+```bash
+pnpm exec playwright install chromium webkit    # once
+pnpm e2e                                        # builds and starts the app on :3000, or reuses one running there
+BASE_URL=https://watchlist-ashen-ten.vercel.app pnpm e2e
+```
+
+- `BASE_URL` defaults to `http://localhost:3000`. Vercel previews sit behind Deployment Protection, which answers every request with its own 401, so point it at localhost or production.
+- It needs `.env.local`: setup creates `e2e_viewer`, `e2e_stranger` and `e2e_friend` with the service-role key. The local app and production share one Supabase project, so the global teardown deletes those accounts and reruns `pnpm seed`, pass or fail.
+- `e2e/security.spec.ts` checks the security model over HTTP: every API route answers 401 JSON when signed out, a user id in the body is ignored, malformed ratings, ids and queries get 400 and non-JSON bodies 415, following yourself is 400, following twice is 204 both times, an unknown handle is 404, a member who follows nobody sees no one's watched films, the Data API gives the publishable key nothing, and no page or JSON response contains a UUID.
+- `e2e/auth.spec.ts`: with JavaScript off, the login form posts, so a sign-in sent before the page hydrates never puts the email or password in the URL.
+- `e2e/core.spec.ts`: the demo account signs in, adds a film, marks it watched with a rating, sees Stats count it and removes it.
+- `e2e/social.spec.ts`: follow a member from search, find them in the feed and on their page, unfollow; a new handle keeps the people you follow; a feed of exactly 30 rows offers no Load more, and one of 35 loads the last 5 once, with no row repeated.
 
 ## Known limitations
 
@@ -112,6 +129,8 @@ erDiagram
 - The watchlist and a member's watched films are not paginated.
 - The feed pages by `watched_at` alone, so entries sharing one timestamp across a page edge are skipped past. The app marks one film watched per request; only a bulk SQL update, which stamps every row with its transaction's `now()`, would create such a tie.
 - Friends who watched covers the first 500 films of a grid; only a watchlist longer than that could pass it.
+- An unknown film or member page shows Not found with a 200 status: its loading skeleton streams before the page knows the film or member doesn't exist.
+- Passwords aren't checked against known breaches: Supabase offers that check on paid plans only.
 
 ---
 

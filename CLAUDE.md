@@ -5,7 +5,7 @@ Project conventions. Next.js specifics: see `AGENTS.md` and the bundled docs in 
 ## Commands
 
 - `pnpm dev` · `pnpm check` (typecheck + lint + format:check + unit tests — must be green before any commit)
-- `pnpm test` (Vitest unit tests)
+- `pnpm test` (Vitest unit tests) · `pnpm e2e` (Playwright against `BASE_URL`, default http://localhost:3000; reads `.env.local`, creates `e2e_` accounts and reseeds afterwards)
 - `pnpm db:push` (`supabase db push`) · `pnpm db:types` (regenerate `lib/supabase/database.types.ts`) · `pnpm seed` · `pnpm knip`
 
 ## Stack facts (Next 16 — do not use older idioms)

@@ -80,3 +80,7 @@ export async function parseJson<T extends z.ZodType>(req: Request, schema: T) {
   });
   return schema.parse(body);
 }
+
+export function parseQuery<T extends z.ZodType>(req: Request, schema: T) {
+  return schema.parse(Object.fromEntries(new URL(req.url).searchParams));
+}

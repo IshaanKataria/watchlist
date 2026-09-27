@@ -58,7 +58,10 @@ export function RatingSheet({
 
   const heading = `Rate ${title}`;
   const form = (
-    <form onSubmit={onSubmit} className="grid gap-4 p-4 md:p-0">
+    <form
+      onSubmit={onSubmit}
+      className="grid gap-4 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:p-0"
+    >
       <fieldset className="grid grid-cols-5 gap-2">
         <legend className="sr-only">Rating out of 10</legend>
         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (

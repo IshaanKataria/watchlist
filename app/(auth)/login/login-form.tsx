@@ -40,8 +40,10 @@ export function EmailForm({ mode }: { mode: "sign-in" | "sign-up" }) {
     });
   }
 
+  // method="post": submitted before the page hydrates, the form goes to the server natively, and
+  // a GET would put the email and password in the URL, the history and request logs.
   return (
-    <form onSubmit={onSubmit} className="grid gap-4 pt-2">
+    <form method="post" onSubmit={onSubmit} className="grid gap-4 pt-2">
       <div className="grid gap-2">
         <Label htmlFor={`${id}-email`}>Email</Label>
         <Input

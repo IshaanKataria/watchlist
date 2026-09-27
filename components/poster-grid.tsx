@@ -74,14 +74,15 @@ export function PosterGrid<T extends Poster>({
   );
 }
 
-export function PosterGridSkeleton() {
+// actions stands in for the button row a PosterGrid given an action draws under each card.
+export function PosterGridSkeleton({ actions = true }: { actions?: boolean }) {
   return (
     <ul className={GRID} aria-hidden>
       {Array.from({ length: 12 }, (_, i) => (
         <li key={i} className="grid gap-2">
           <Skeleton className="aspect-2/3 rounded-lg" />
           <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-11 rounded-lg" />
+          {actions && <Skeleton className="h-11 rounded-lg" />}
         </li>
       ))}
     </ul>
