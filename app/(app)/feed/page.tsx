@@ -26,7 +26,9 @@ export default async function FeedPage() {
         </Link>
       </div>
       {feed.items.length > 0 ? (
-        <FeedList cursor={feed.nextCursor}>
+        // Keyed on the cursor: a fresh first page (tapping Feed again) must drop pages loaded after
+        // the old one, or a row is skipped or shown twice.
+        <FeedList key={feed.nextCursor} cursor={feed.nextCursor}>
           {feed.items.map((item) => (
             <FeedRow
               key={`${item.member.handle} ${item.movie.tmdbId}`}
