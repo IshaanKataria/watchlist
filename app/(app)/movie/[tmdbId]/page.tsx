@@ -101,8 +101,15 @@ export default async function MoviePage({
   );
 }
 
-// Each handle links to its profile; the faces beside them are hidden, since the names say it all.
+// Names three, like the faces beside it, then counts the rest. The faces are hidden from screen
+// readers, since the names say it all.
 function WatchedBy({ friends }: { friends: MemberDto[] }) {
+  const named = friends.slice(0, 3).map((friend) => friend.handle);
+  const others = friends.length - named.length;
+  const items =
+    others > 0
+      ? [...named, `${others} ${others === 1 ? "other" : "others"}`]
+      : named;
   return (
     <p className="flex flex-wrap items-center gap-2 text-sm">
       <span aria-hidden>
@@ -110,21 +117,19 @@ function WatchedBy({ friends }: { friends: MemberDto[] }) {
       </span>
       <span>
         Watched by{" "}
-        {handles
-          .formatToParts(friends.map((friend) => friend.handle))
-          .map((part, index) =>
-            part.type === "element" ? (
-              <Link
-                key={index}
-                href={`/u/${part.value}`}
-                className="rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                @{part.value}
-              </Link>
-            ) : (
-              part.value
-            ),
-          )}
+        {handles.formatToParts(items).map((part, index) =>
+          part.type === "element" && named.includes(part.value) ? (
+            <Link
+              key={index}
+              href={`/u/${part.value}`}
+              className="rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              @{part.value}
+            </Link>
+          ) : (
+            part.value
+          ),
+        )}
       </span>
     </p>
   );
