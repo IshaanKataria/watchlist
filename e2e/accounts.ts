@@ -12,7 +12,7 @@ export const admin = createClient<Database>(
 
 export const DEMO = { email: "demo@example.com", password: "watchlist-demo" };
 
-// Created by auth.setup.ts and deleted by global-teardown.ts, which removes every e2e_ account.
+// Created by auth.setup.ts and deleted by global-teardown.ts.
 export const E2E_HANDLES = ["e2e_viewer", "e2e_stranger", "e2e_friend"];
 const PASSWORD = "watchlist-e2e";
 
@@ -29,11 +29,13 @@ export async function createAccount(handle: string) {
   if (error) throw error;
 }
 
+// Exact emails, never a prefix: the database is production's, and anyone may sign up as e2e_…
 export async function deleteE2eAccounts() {
+  const emails = new Set(E2E_HANDLES.map(emailOf));
   const { data, error } = await admin.auth.admin.listUsers({ perPage: 1000 });
   if (error) throw error;
   for (const user of data.users) {
-    if (!user.email?.startsWith("e2e_")) continue;
+    if (!user.email || !emails.has(user.email)) continue;
     const { error } = await admin.auth.admin.deleteUser(user.id);
     if (error) throw error;
   }
