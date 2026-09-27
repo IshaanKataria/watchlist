@@ -21,7 +21,7 @@ Next.js 16 (App Router, TypeScript) · Tailwind v4 + shadcn/ui on Base UI · Sup
 
 ## Run locally
 
-Needs Node 22.18+, pnpm and the Supabase CLI.
+Needs Node 22.18+ (`pnpm seed` runs TypeScript through Node's type stripping), pnpm and the Supabase CLI. Vercel builds on Node 22.x, set by `engines` in `package.json`.
 
 ```bash
 pnpm install
