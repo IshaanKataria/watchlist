@@ -1,5 +1,5 @@
 import { requireUser, route } from "@/lib/http";
-import { handleSchema } from "@/services/profiles";
+import { handleSchema } from "@/services/profiles.schema";
 import { follow, unfollow } from "@/services/social";
 
 type Context = RouteContext<"/api/follows/[handle]">;

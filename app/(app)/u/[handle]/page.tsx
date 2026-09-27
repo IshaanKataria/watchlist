@@ -8,7 +8,7 @@ import { GenreBars, StatTiles } from "@/components/stats";
 import { buttonVariants } from "@/components/ui/button";
 import { requireUserId } from "@/lib/supabase/server";
 import type { Stats, WatchedFilm } from "@/services/dto";
-import { handleSchema } from "@/services/profiles";
+import { handleSchema } from "@/services/profiles.schema";
 import { getMember } from "@/services/social";
 
 export default async function MemberPage({ params }: PageProps<"/u/[handle]">) {

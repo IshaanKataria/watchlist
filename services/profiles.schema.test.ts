@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { handleSchema, updateProfileSchema } from "./profiles";
+import { handleSchema, updateProfileSchema } from "./profiles.schema";
 
 describe("handleSchema", () => {
   it.each(["sam", "mira_chen", "user2026", "a".repeat(20)])(
