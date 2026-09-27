@@ -4,6 +4,7 @@ import { getMovie, searchMovies } from "@/lib/tmdb";
 
 import { ENTRY_COLUMNS, toEntryDto, toWatchlistItemDto } from "./dto";
 import { cacheMovie } from "./movies";
+import { friendsWhoWatched } from "./social";
 import type { EntryUpdate } from "./watchlist.schema";
 
 export async function addEntry(userId: string, tmdbId: number) {
@@ -61,7 +62,8 @@ export async function removeEntry(userId: string, tmdbId: number) {
   }
 }
 
-// Newest first on both tabs: watched films by watched_at, the rest by added_at.
+// Newest first on both tabs: watched films by watched_at, the rest by added_at. Each film carries
+// the people the member follows who watched it.
 export async function listEntries(userId: string) {
   const supabase = await createClient();
   const { data } = await supabase
@@ -73,13 +75,18 @@ export async function listEntries(userId: string) {
     .order("watched_at", { ascending: false, nullsFirst: false })
     .order("added_at", { ascending: false })
     .throwOnError();
-  return data.map(toWatchlistItemDto);
+  const friends = await friendsWhoWatched(data.map((row) => row.movie.tmdb_id));
+  return data.map((row) => ({
+    ...toWatchlistItemDto(row),
+    friends: friends.get(row.movie.tmdb_id) ?? [],
+  }));
 }
 
-// TMDB's details with the member's entry, or null when TMDB has no such film.
+// TMDB's details with the member's entry and the people they follow who watched it, or null when
+// TMDB has no such film.
 export async function getMovieWithEntry(userId: string, tmdbId: number) {
   const supabase = await createClient();
-  const [movie, { data }] = await Promise.all([
+  const [movie, { data }, friends] = await Promise.all([
     getMovie(tmdbId),
     supabase
       .from("watchlist_entries")
@@ -88,29 +95,39 @@ export async function getMovieWithEntry(userId: string, tmdbId: number) {
       .eq("tmdb_id", tmdbId)
       .maybeSingle()
       .throwOnError(),
+    friendsWhoWatched([tmdbId]),
   ]);
-  return movie && { ...movie, entry: data && toEntryDto(data) };
+  return (
+    movie && {
+      ...movie,
+      entry: data && toEntryDto(data),
+      friends: friends.get(tmdbId) ?? [],
+    }
+  );
 }
 
-// TMDB results paired with the member's entry, or null, so each can offer Add or show its status.
+// TMDB results paired with the member's entry, or null, so each can offer Add or show its status,
+// and with the people they follow who watched it.
 export async function searchWithEntries(userId: string, q: string) {
   const movies = await searchMovies(q);
   if (movies.length === 0) return [];
+  const tmdbIds = movies.map((movie) => movie.tmdbId);
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("watchlist_entries")
-    .select(ENTRY_COLUMNS)
-    .eq("user_id", userId)
-    .in(
-      "tmdb_id",
-      movies.map((movie) => movie.tmdbId),
-    )
-    .throwOnError();
+  const [{ data }, friends] = await Promise.all([
+    supabase
+      .from("watchlist_entries")
+      .select(ENTRY_COLUMNS)
+      .eq("user_id", userId)
+      .in("tmdb_id", tmdbIds)
+      .throwOnError(),
+    friendsWhoWatched(tmdbIds),
+  ]);
   const entries = new Map(
     data.map((entry) => [entry.tmdb_id, toEntryDto(entry)]),
   );
   return movies.map((movie) => ({
     ...movie,
     entry: entries.get(movie.tmdbId) ?? null,
+    friends: friends.get(movie.tmdbId) ?? [],
   }));
 }
