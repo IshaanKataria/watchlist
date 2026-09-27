@@ -56,16 +56,18 @@ export async function unfollow(handle: string) {
   if (error) throw followError(error);
 }
 
-// feed() returns at most this many rows (0009_feed.sql), so a full page may have more behind it.
+// feed() returns one row more than a page (0011_feed_lookahead.sql): that row only says an older
+// page exists, and the page's last row is the cursor for it.
 const FEED_PAGE = 30;
 
 export async function getFeed(before?: string) {
   const supabase = await createClient();
   const { data } = await supabase.rpc("feed", { before }).throwOnError();
+  const page = data.slice(0, FEED_PAGE);
   return {
-    items: data.map(toFeedItemDto),
+    items: page.map(toFeedItemDto),
     nextCursor:
-      data.length === FEED_PAGE ? (data.at(-1)?.watched_at ?? null) : null,
+      data.length > FEED_PAGE ? (page.at(-1)?.watched_at ?? null) : null,
   };
 }
 
