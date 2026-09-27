@@ -4,6 +4,7 @@ import {
   statsSchema,
   toFeedItemDto,
   toMemberProfileDto,
+  toTasteMatchDto,
   toWatchedFilmDto,
 } from "./dto";
 
@@ -112,6 +113,22 @@ describe("toWatchedFilmDto", () => {
       year: null,
       posterPath: null,
       rating: 10,
+    });
+  });
+});
+
+describe("toTasteMatchDto", () => {
+  it("maps the count and percent", () => {
+    expect(toTasteMatchDto({ shared_count: 12, match_percent: 82 })).toEqual({
+      sharedCount: 12,
+      matchPercent: 82,
+    });
+  });
+
+  it("keeps a null percent below the minimum overlap", () => {
+    expect(toTasteMatchDto({ shared_count: 1, match_percent: null })).toEqual({
+      sharedCount: 1,
+      matchPercent: null,
     });
   });
 });

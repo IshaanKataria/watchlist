@@ -9,6 +9,7 @@ import {
   toMemberDto,
   toMemberProfileDto,
   toMemberResultDto,
+  toTasteMatchDto,
   toWatchedFilmDto,
   type MemberDto,
 } from "./dto";
@@ -71,14 +72,26 @@ export async function getFeed(before?: string) {
   };
 }
 
+// null unless the caller follows the member: taste_match() gives zero rows for anyone else.
+async function getTasteMatch(handle: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .rpc("taste_match", { target_handle: handle })
+    .maybeSingle()
+    .throwOnError();
+  return data && toTasteMatchDto(data);
+}
+
 // null for an unknown handle. watched and stats stay empty unless the caller follows the member
-// or is them: the functions gate themselves, so all three run at once.
+// or is them, and tasteMatch unless they follow them: the functions gate themselves, so all run
+// at once.
 export async function getMember(handle: string) {
   const supabase = await createClient();
-  const [profile, watched, stats] = await Promise.all([
+  const [profile, watched, stats, tasteMatch] = await Promise.all([
     supabase.rpc("member_profile", { target_handle: handle }).single(),
     supabase.rpc("member_watched", { target_handle: handle }).throwOnError(),
     supabase.rpc("member_stats", { target_handle: handle }).throwOnError(),
+    getTasteMatch(handle),
   ]);
   if (profile.error?.code === "P0002") return null;
   if (profile.error) throw profile.error;
@@ -86,6 +99,7 @@ export async function getMember(handle: string) {
     ...toMemberProfileDto(profile.data),
     watched: watched.data.map(toWatchedFilmDto),
     stats: statsSchema.nullable().parse(stats.data),
+    tasteMatch,
   };
 }
 
