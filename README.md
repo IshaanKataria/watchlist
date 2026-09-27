@@ -18,6 +18,7 @@ More phone and desktop captures are in [`docs/screenshots`](docs/screenshots).
 ## What it does
 
 - Search TMDB and open a film's page with its backdrop, runtime, genres and cast.
+- An empty search isn't blank. It shows what's popular this week, ready to add, and a few films to try.
 - Keep a to-watch list. Mark a film watched, rate it 1 to 10 or skip the rating, change it later, or remove it with undo.
 - Stats worked out in SQL: films watched and rated, average rating, total runtime, genres and a rating histogram.
 - An AI taste profile. It gives a short critic's read of your ratings and 3 to 5 films to watch next, each tied to a film you rated.

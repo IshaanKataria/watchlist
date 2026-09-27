@@ -1,8 +1,13 @@
 import { ApiError } from "@/lib/http";
 import { createClient } from "@/lib/supabase/server";
-import { getMovie, searchMovies } from "@/lib/tmdb";
+import { getMovie, searchMovies, trendingMovies } from "@/lib/tmdb";
 
-import { ENTRY_COLUMNS, toEntryDto, toWatchlistItemDto } from "./dto";
+import {
+  ENTRY_COLUMNS,
+  type MovieSummary,
+  toEntryDto,
+  toWatchlistItemDto,
+} from "./dto";
 import { cacheMovie } from "./movies";
 import { friendsWhoWatched } from "./social";
 import type { EntryUpdate } from "./watchlist.schema";
@@ -106,10 +111,9 @@ export async function getMovieWithEntry(userId: string, tmdbId: number) {
   );
 }
 
-// TMDB results paired with the member's entry, or null, so each can offer Add or show its status,
+// TMDB films paired with the member's entry, or null, so each can offer Add or show its status,
 // and with the people they follow who watched it.
-export async function searchWithEntries(userId: string, q: string) {
-  const movies = await searchMovies(q);
+async function withEntries(userId: string, movies: MovieSummary[]) {
   if (movies.length === 0) return [];
   const tmdbIds = movies.map((movie) => movie.tmdbId);
   const supabase = await createClient();
@@ -130,4 +134,12 @@ export async function searchWithEntries(userId: string, q: string) {
     entry: entries.get(movie.tmdbId) ?? null,
     friends: friends.get(movie.tmdbId) ?? [],
   }));
+}
+
+export async function searchWithEntries(userId: string, q: string) {
+  return withEntries(userId, await searchMovies(q));
+}
+
+export async function trendingWithEntries(userId: string) {
+  return withEntries(userId, (await trendingMovies()).slice(0, 12));
 }

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getMovie, searchMovies } from "./tmdb";
+import { getMovie, searchMovies, trendingMovies } from "./tmdb";
 
 const dune = {
   id: 438631,
@@ -66,6 +66,37 @@ describe("searchMovies", () => {
   ])("throws a 502 on %s", async (_, arrange) => {
     arrange();
     await expect(searchMovies("dune")).rejects.toMatchObject({
+      status: 502,
+      code: "tmdb_unavailable",
+    });
+  });
+});
+
+describe("trendingMovies", () => {
+  it("maps this week's trending films to summaries", async () => {
+    respond({ results: [dune] });
+
+    expect(await trendingMovies()).toEqual([
+      {
+        tmdbId: 438631,
+        title: "Dune",
+        year: 2021,
+        posterPath: "/dune.jpg",
+        voteAverage: 7.8,
+      },
+    ]);
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+    expect(url).toBe(
+      "https://api.themoviedb.org/3/trending/movie/week?language=en-US",
+    );
+    expect(new Headers(init?.headers).get("Authorization")).toBe(
+      "Bearer test-token",
+    );
+  });
+
+  it("throws a 502 when TMDB fails", async () => {
+    respond({}, 503);
+    await expect(trendingMovies()).rejects.toMatchObject({
       status: 502,
       code: "tmdb_unavailable",
     });
