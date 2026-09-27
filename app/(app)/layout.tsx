@@ -37,12 +37,14 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       </main>
       {/* TMDB's terms ask for their logo and this notice. Below md the bottom padding clears the
           fixed tab bar: its 4rem, a 1.5rem gap and the home indicator. */}
-      <footer className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] text-xs text-muted-foreground md:pb-6">
-        <Image src="/tmdb-logo.svg" alt="TMDB" width={92} height={12} />
-        <p>
-          This product uses the TMDB API but is not endorsed or certified by
-          TMDB.
-        </p>
+      <footer className="border-t border-border/60 pt-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-6">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 text-center text-xs text-muted-foreground sm:flex-row sm:text-left">
+          <Image src="/tmdb-logo.svg" alt="TMDB" width={92} height={12} />
+          <p className="text-balance">
+            This product uses the TMDB API but is not endorsed or certified by
+            TMDB.
+          </p>
+        </div>
       </footer>
     </>
   );
