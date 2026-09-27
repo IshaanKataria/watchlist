@@ -26,7 +26,7 @@ Phone and desktop captures of search, the watchlist, the feed, a member page and
 
 ## Stack
 
-Next.js 16 (App Router, TypeScript) · Tailwind v4 + shadcn/ui on Base UI · Supabase (Postgres, Auth, RLS) · Zod · Vercel AI SDK 7 + `@ai-sdk/anthropic` · TMDB API · Vitest · Vercel
+Next.js 16 (App Router, TypeScript) · Tailwind v4 + shadcn/ui on Base UI · Supabase (Postgres, Auth, RLS) · Zod · Vercel AI SDK 7 + `@ai-sdk/anthropic` · TMDB API · Vitest · Playwright · Vercel
 
 ## Run locally
 
