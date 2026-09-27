@@ -128,6 +128,8 @@ export function toWatchedFilmDto(
   };
 }
 
+export type WatchedFilm = ReturnType<typeof toWatchedFilmDto>;
+
 // A schema because the feed's Load more button parses API pages with it.
 export const feedItemSchema = z.object({
   member: memberSchema,
