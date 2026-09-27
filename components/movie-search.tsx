@@ -20,6 +20,8 @@ const responseSchema = z.object({
   ),
 });
 
+const SUGGESTIONS = ["Dune: Part Two", "Past Lives", "Parasite", "Aftersun"];
+
 const score = new Intl.NumberFormat("en", {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,
@@ -35,7 +37,7 @@ function search(q: string, signal: AbortSignal) {
 
 type Result = { q: string } & Awaited<ReturnType<typeof search>>;
 
-// Shows children (popular films) until there is something to search for.
+// Shows suggestions and children (popular films) until there is something to search for.
 export function MovieSearch({
   initialQuery,
   children,
@@ -86,7 +88,29 @@ export function MovieSearch({
           className="pl-9"
         />
       </label>
-      {q ? <SearchResults q={q} result={result} onRetry={retry} /> : children}
+      {q ? (
+        <SearchResults q={q} result={result} onRetry={retry} />
+      ) : (
+        <>
+          <div className="grid gap-3">
+            <p className="text-sm text-muted-foreground">
+              Not sure where to start? Try one of these:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {SUGGESTIONS.map((title) => (
+                <Button
+                  key={title}
+                  variant="outline"
+                  onClick={() => setQuery(title)}
+                >
+                  {title}
+                </Button>
+              ))}
+            </div>
+          </div>
+          {children}
+        </>
+      )}
     </div>
   );
 }
