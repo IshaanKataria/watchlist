@@ -23,6 +23,7 @@ More phone and desktop captures are in [`docs/screenshots`](docs/screenshots).
 - Stats worked out in SQL: films watched and rated, average rating, total runtime, genres and a rating histogram.
 - An AI taste profile. It gives a short critic's read of your ratings and 3 to 5 films to watch next, each tied to a film you rated.
 - Pick a handle, find people and follow them. The feed shows what they watch and rate, their page shows their stats and films, and posters show which of them saw a film.
+- See how closely your ratings match someone you follow: their page shows a percent once you've both rated 3 of the same films.
 - Phone first: a bottom tab bar, bottom sheets instead of dialogs, a 2 to 6 column poster grid and 44px touch targets.
 
 ## Checks from the brief
@@ -108,6 +109,7 @@ erDiagram
 | You only see data of accounts you follow         | `feed`, `member_watched`, `member_stats` and `friends_who_watched` join on the caller's own follow edges, so a member you don't follow gives zero rows or null, the same as an unknown handle. `member_profile` gives anyone only the header: handle, name, avatar and follow counts                                 | `0009_feed.sql`                                                                |
 | To-watch lists stay private                      | Every cross-member function filters `status = 'watched'`; `watchlist_entries` itself stays owner-only under RLS                                                                                                                                                                                                      | `0009_feed.sql`, `0004_watchlist.sql`                                          |
 | Cross-member reads need a session                | The feed, member and friends functions are executable by `authenticated` only, so the publishable key without a session is refused; they take handles or TMDB ids and return handles and film data, never ids                                                                                                        | `0009_feed.sql`                                                                |
+| Taste match only for members you follow          | `taste_match` joins on the caller's own follow edge, so yourself, a member you don't follow and an unknown handle give zero rows. It returns a count and a percent, never the other member's ratings, and is executable by `authenticated` only                                                                      | `0012_taste_match.sql`                                                         |
 
 </details>
 
