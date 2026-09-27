@@ -62,3 +62,30 @@ test("demo adds a film, rates it, sees it in stats and removes it", async ({
   await expect(page.getByText(`Removed ${FILM.title}`)).toBeVisible();
   await expect(card).toHaveCount(0);
 });
+
+test("the empty search shows popular films and suggestions, and Taste has a tab", async ({
+  page,
+}) => {
+  await signIn(page, DEMO.email, DEMO.password);
+
+  const popular = page.locator("section", {
+    has: page.getByRole("heading", { name: "Popular this week" }),
+  });
+  await expect(popular.locator('a[href^="/movie/"]').first()).toBeVisible();
+
+  const chip = page.getByRole("button", { name: "Parasite", exact: true });
+  await hydrated(chip);
+  await chip.click();
+  await expect(page).toHaveURL(/\/search\?q=Parasite$/);
+  await expect(page.locator('main a[href="/movie/496243"]')).toBeVisible();
+  await expect(popular).toHaveCount(0);
+
+  await page
+    .getByRole("navigation", { name: "Main" })
+    .getByRole("link", { name: "Taste", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/taste$/);
+  await expect(
+    page.getByRole("heading", { name: "Taste profile", level: 1 }),
+  ).toBeVisible();
+});
