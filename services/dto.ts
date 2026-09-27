@@ -61,6 +61,8 @@ export function toTasteMatchDto(row: {
   return { sharedCount: row.shared_count, matchPercent: row.match_percent };
 }
 
+export type TasteMatch = ReturnType<typeof toTasteMatchDto>;
+
 // Schemas rather than bare types: the search box parses API responses with them.
 export const movieSummarySchema = z.object({
   tmdbId: z.number().int().positive(),
