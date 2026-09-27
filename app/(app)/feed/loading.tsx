@@ -10,7 +10,7 @@ export default function FeedLoading() {
       <ul className="divide-y" aria-hidden>
         {Array.from({ length: 6 }, (_, i) => (
           <li key={i} className="flex items-center gap-3 py-3">
-            <Skeleton className="size-10 rounded-full" />
+            <Skeleton className="size-11 rounded-full" />
             <div className="grid flex-1 gap-2">
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-3 w-1/4" />

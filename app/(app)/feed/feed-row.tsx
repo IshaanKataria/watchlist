@@ -31,13 +31,17 @@ function timeAgo(iso: string) {
 export function FeedRow({ item }: { item: FeedItem }) {
   const { member, movie, rating } = item;
   const film = `/movie/${movie.tmdbId}`;
+  const profile = `/u/${member.handle}`;
 
   return (
     <li className="flex items-center gap-3 py-3">
-      <MemberAvatar member={member} size="lg" />
+      {/* The avatar and poster are bigger targets for a finger; the text links are the keyboard path. */}
+      <Link href={profile} tabIndex={-1} aria-hidden className="shrink-0">
+        <MemberAvatar member={member} className="size-11" />
+      </Link>
       <div className="grid min-w-0 flex-1 gap-1 text-sm">
         <p className="text-pretty">
-          <Link href={`/u/${member.handle}`} className={LINK}>
+          <Link href={profile} className={LINK}>
             @{member.handle}
           </Link>
           {rating === null ? " watched " : " rated "}
@@ -56,7 +60,6 @@ export function FeedRow({ item }: { item: FeedItem }) {
           <time dateTime={item.watchedAt}>{timeAgo(item.watchedAt)}</time>
         </p>
       </div>
-      {/* The title link is the keyboard path; the poster is only a bigger target for a finger. */}
       <Link
         href={film}
         tabIndex={-1}
