@@ -35,14 +35,23 @@ describe("parseJson", () => {
 });
 
 describe("parseQuery", () => {
-  const schema = z.object({ q: z.string().min(1) });
-  const get = (query: string) => new Request(`http://localhost/api?${query}`);
+  const search = route((req: Request) =>
+    Promise.resolve(json(parseQuery(req, z.object({ q: z.string().min(1) })))),
+  );
+  const get = (query: string) =>
+    search(new Request(`http://localhost/api?${query}`), undefined);
 
-  it("parses the query string", () => {
-    expect(parseQuery(get("q=dune"), schema)).toEqual({ q: "dune" });
+  it("parses the query string", async () => {
+    expect(await (await get("q=dune")).json()).toEqual({ q: "dune" });
   });
 
-  it("throws a ZodError, which route() answers with 400", () => {
-    expect(() => parseQuery(get("q="), schema)).toThrow(z.ZodError);
+  it("answers a bad one with 400 and the failing field", async () => {
+    const res = await get("q=");
+    expect(res.status).toBe(400);
+    const { error } = z
+      .object({ error: z.object({ code: z.string(), message: z.string() }) })
+      .parse(await res.json());
+    expect(error.code).toBe("invalid_request");
+    expect(error.message).toMatch(/^q: /);
   });
 });

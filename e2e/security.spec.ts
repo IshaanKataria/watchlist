@@ -30,12 +30,9 @@ test.describe("signed out", () => {
   test("every API route answers 401 JSON, never a redirect", async ({
     context,
   }) => {
+    const { request } = context;
     for (const [method, path, data] of calls) {
-      const res = await context.request.fetch(path, {
-        method,
-        data,
-        maxRedirects: 0,
-      });
+      const res = await request.fetch(path, { method, data, maxRedirects: 0 });
       expect.soft(res.status(), `${method} ${path}`).toBe(401);
       expect
         .soft(await res.json(), `${method} ${path}`)
@@ -122,7 +119,9 @@ test.describe("as a member", () => {
       const res = await context.request.fetch(path, { method, data });
       const label = `${method} ${path} ${JSON.stringify(data) ?? ""}`;
       expect.soft(res.status(), label).toBe(400);
-      await expectNoUuid(res);
+      expect
+        .soft(await res.json(), label)
+        .toMatchObject({ error: { code: "invalid_request" } });
     }
   });
 
@@ -163,33 +162,37 @@ test.describe("as a member", () => {
   });
 });
 
-test.describe("a member who follows nobody", () => {
-  test.use({ storageState: authFile("e2e_stranger") });
+// demo follows sam and mira, and their films show up verbatim across these pages: the control that
+// makes their absence for a member who follows nobody mean something.
+const followed = members.filter((member) => member.handle !== "demo");
+const viewers: [handle: string, follows: boolean][] = [
+  ["demo", true],
+  ["e2e_stranger", false],
+];
 
-  test("sees no watched films on a member page or in the feed", async ({
-    page,
-  }) => {
-    await page.goto("/u/sam");
-    await expect(
-      page.getByText("Follow @sam to see their films."),
-    ).toBeVisible();
-    await page.goto("/feed");
-    await expect(
-      page.getByText("When people you follow watch a film"),
-    ).toBeVisible();
+for (const [handle, follows] of viewers) {
+  test.describe(`as ${handle}`, () => {
+    test.use({ storageState: authFile(handle) });
 
-    // The server's HTML, flight data included, names none of their films.
-    const titles = members
-      .filter((member) => member.handle !== "demo")
-      .flatMap((member) => member.watched.map(([title]) => String(title)));
-    for (const path of ["/u/sam", "/u/mira", "/feed"]) {
-      const html = await (await page.request.get(path)).text();
-      for (const title of titles) expect.soft(html, path).not.toContain(title);
-    }
-    const api = await page.request.get("/api/feed");
-    expect(await api.json()).toEqual({ items: [], nextCursor: null });
+    test(`${follows ? "sees" : "sees none of"} the films sam and mira watched`, async ({
+      context,
+    }) => {
+      let html = "";
+      for (const path of ["/u/sam", "/u/mira", "/feed", "/api/feed"]) {
+        const res = await context.request.get(path);
+        expect(res.ok(), path).toBe(true);
+        html += await res.text();
+      }
+      for (const [title] of followed.flatMap((member) => member.watched)) {
+        expect.soft(html.includes(String(title)), String(title)).toBe(follows);
+      }
+      if (!follows) {
+        expect(html).toContain("to see their films.");
+        expect(html).toContain("When people you follow watch a film");
+      }
+    });
   });
-});
+}
 
 test.describe("as demo", () => {
   test.use({ storageState: authFile("demo") });
