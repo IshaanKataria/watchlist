@@ -4,7 +4,7 @@ Search TMDB, keep a list of films to watch, rate the ones you've seen, see your 
 
 **Live:** https://watchlist-ashen-ten.vercel.app · **Author:** Ishaan Kataria · ishaankataria3@gmail.com
 
-**Demo account:** `demo@example.com` / `watchlist-demo`. It has a rated history, so Stats and Taste profile are populated. <!-- TODO(extension): say who demo follows once the friend system ships. --> You can also create your own account: email confirmation is off (see Assumptions).
+**Demo account:** `demo@example.com` / `watchlist-demo`. It has a rated history and follows sam and mira, so Stats, Taste profile, the Feed and their profiles are populated. You can also create your own account: email confirmation is off (see Assumptions).
 
 ## Features
 
@@ -12,9 +12,8 @@ Search TMDB, keep a list of films to watch, rate the ones you've seen, see your 
 - Mark a film watched with a 1–10 rating (or skip the rating), change it later, move it back, or remove it with undo
 - Stats computed in SQL: films watched and rated, average rating, total runtime, genre breakdown, rating histogram
 - AI taste profile: a short critic's read on your ratings and 3–5 films to watch next, each citing a film you rated
+- Friend system: change your handle, find members by name or @handle and follow them. The feed lists the films the people you follow watch and rate, a member's page shows their stats and watched films once you follow them, and posters show which of them watched a film
 - Mobile-first: a bottom tab bar under `md`, bottom-sheet drawers instead of dialogs, a 2 to 6 column poster grid, 44px touch targets
-
-<!-- TODO(extension): friend system (handles, member search, follows, feed). -->
 
 ## Stack
 
@@ -41,6 +40,7 @@ pnpm dev
 - **Mutations** go from the browser to route handlers under `app/api`. Each one is `route(async (req) => { requireUser(); parse with Zod; call the service; return a status })`, and `route()` maps every failure to `{ error: { code, message } }` with the right status. Route handlers rather than server actions because the contract is plain HTTP (401, 400, 404, 409, 415, 429) that anyone can check with curl.
 - **Auth** is Supabase Auth. The browser's Supabase client only signs in and out; it never reads data. `proxy.ts` refreshes the session with `getClaims()` and sends signed-out pages to `/login`. It skips `/api`, which answers 401 JSON itself.
 - **Stats** come from one SQL function, `user_stats()`, which runs as the caller so RLS still decides which rows it sees.
+- **Cross-member reads** (member search, the feed, member pages, friends who watched) go through `security definer` functions that take handles, act as `auth.uid()`, check the follow graph and return no ids. Every table stays owner-only; `member_stats()` reuses `user_stats()` once the follow check passes.
 - **Films** are called live from TMDB for search and film pages. Adding a film snapshots its display fields into `movies` so stats can be computed in SQL.
 
 ```mermaid
@@ -70,8 +70,9 @@ erDiagram
 | Follow edges keyed on the stable id              | `follows (follower_id, followee_id)` references `profiles.id` with a composite primary key; handles are resolved to ids inside the database, so a rename keeps every edge                                                                                                                                            | `0008_social.sql`                                                              |
 | Follows are idempotent and can't target yourself | `PUT` and `DELETE /api/follows/[handle]` answer 204 however often they run (`on conflict do nothing`, a no-op delete); following yourself is a 400, backed by a check constraint, and an unknown handle a 404                                                                                                        | `0008_social.sql`, `services/social.ts`                                        |
 | The follow graph is closed to direct access      | `follows` has RLS on, no policies and no grants for `anon` or `authenticated`, so the Data API refuses it even with a member's session token. Search, list, follow and unfollow are `security definer` functions that take a handle, act as `auth.uid()`, return no ids and are executable by signed-in members only | `0008_social.sql`                                                              |
-
-<!-- TODO(extension): a row for "you only see data of accounts you follow" once the feed ships. -->
+| You only see data of accounts you follow         | `feed`, `member_watched`, `member_stats` and `friends_who_watched` join on the caller's own follow edges, so a member you don't follow gives zero rows or null, the same as an unknown handle. `member_profile` gives anyone only the header: handle, name, avatar and follow counts                                 | `0009_feed.sql`                                                                |
+| To-watch lists stay private                      | Every cross-member function filters `status = 'watched'`; `watchlist_entries` itself stays owner-only under RLS                                                                                                                                                                                                      | `0009_feed.sql`, `0004_watchlist.sql`                                          |
+| Cross-member reads need a session                | The feed, member and friends functions are executable by `authenticated` only, so the publishable key without a session is refused; they take handles or TMDB ids and return handles and film data, never ids                                                                                                        | `0009_feed.sql`                                                                |
 
 ## Assumptions
 
@@ -82,8 +83,8 @@ erDiagram
 - Handles are generated at sign-up from the email or Google name (`a–z 0–9 _`, 3–20 characters, a numeric suffix on collision, a short reserved list).
 - The taste profile needs at least 3 rated films. An unchanged history returns the saved profile without a model call; a changed history can regenerate at most once a minute.
 - Functions are pinned to `syd1` (`vercel.json`), next to the Sydney Supabase region.
-
-<!-- TODO(extension): visibility rules (who sees whose watched films and ratings) and what the feed shows. -->
+- Visibility: you see only the accounts you follow, and of those only watched films with their ratings and watched dates. To-watch lists are private to their owner. Any signed-in member can find another and see their handle, name, avatar and follower and following counts, nothing more, until they follow them.
+- The feed shows the watched films of the people you follow, newest first, 30 at a time. Marking a film watched is the event: a later rating change updates the row but doesn't move it, since `watched_at` is the first time the film was marked watched.
 
 ## AI taste profile
 
@@ -102,12 +103,15 @@ erDiagram
 - `user_stats()` parsing, including an empty account
 - Taste profile: prompt hashing, recommendation picking, the regenerate countdown
 - Handle rules
+- Feed cursor parsing (a Postgres timestamp passes back verbatim) and the feed, member profile and watched-film mappers
 
 ## Known limitations
 
 - The regenerate limit checks, then acts: parallel requests straight after a list change can each pay for a model call. The page disables the button while one is running.
 - Search shows TMDB's first page of results (20 films).
-- The watchlist is not paginated.
+- The watchlist and a member's watched films are not paginated.
+- The feed pages by `watched_at` alone: two entries from people you follow, marked watched in the same microsecond and split across a page edge, could skip one.
+- Friends who watched covers the first 500 films of a grid; only a watchlist longer than that could pass it.
 
 ---
 
