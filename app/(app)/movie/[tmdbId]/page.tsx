@@ -36,10 +36,12 @@ export default async function MoviePage({
 
   return (
     <article className="grid gap-8">
-      {/* -mx-4 -mt-6 cancel the (app) layout's px-4 pt-6 so the backdrop bleeds edge to edge on phones. */}
-      <section className="relative isolate -mx-4 -mt-6 overflow-hidden px-4 pt-40 pb-6 md:mx-0 md:mt-0 md:rounded-xl md:px-8 md:pt-56 md:pb-8">
+      {/* -mx-4 -mt-6 cancel the (app) layout's px-4 pt-6 so the backdrop bleeds edge to edge on phones.
+          From md, -mt-20 (the header's h-14 plus main's pt-6) slides it under the translucent sticky
+          header, and since it no longer reaches the screen edges there, its sides fade out. */}
+      <section className="relative isolate -mx-4 -mt-6 overflow-hidden px-4 pt-40 pb-6 md:mx-0 md:-mt-20 md:px-0 md:pt-72 md:pb-8">
         {movie.backdropPath && (
-          <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 -z-10 md:mask-x-from-85%">
             <TmdbImage
               path={movie.backdropPath}
               size="w1280"
