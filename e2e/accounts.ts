@@ -79,3 +79,38 @@ export async function entriesOf(handle: string) {
     .throwOnError();
   return data;
 }
+
+// Replaces the member's list with n watched films from the cache, a minute apart, so a feed of
+// them has a known length and no two rows share a watched_at.
+export async function setWatched(handle: string, n: number) {
+  const userId = await profileId(handle);
+  const { data: films } = await admin
+    .from("movies")
+    .select("tmdb_id")
+    .order("tmdb_id")
+    .limit(n)
+    .throwOnError();
+  if (films.length < n) throw new Error(`Only ${films.length} films cached`);
+  await admin
+    .from("watchlist_entries")
+    .delete()
+    .eq("user_id", userId)
+    .throwOnError();
+  const now = Date.now();
+  await admin
+    .from("watchlist_entries")
+    .insert(
+      films.map(({ tmdb_id }, index) => {
+        const at = new Date(now - index * 60_000).toISOString();
+        return {
+          user_id: userId,
+          tmdb_id,
+          status: "watched" as const,
+          rating: (index % 10) + 1,
+          added_at: at,
+          watched_at: at,
+        };
+      }),
+    )
+    .throwOnError();
+}
