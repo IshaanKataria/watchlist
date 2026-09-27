@@ -1,5 +1,5 @@
 import { FollowButton } from "@/components/follow-button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MemberAvatar } from "@/components/member-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MemberResult } from "@/services/dto";
 
@@ -8,12 +8,7 @@ export function MemberList({ members }: { members: MemberResult[] }) {
     <ul className="grid gap-4">
       {members.map((member) => (
         <li key={member.handle} className="flex items-center gap-3">
-          <Avatar size="lg">
-            {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt="" />}
-            <AvatarFallback>
-              {[...member.displayName][0]?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <MemberAvatar member={member} size="lg" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium">{member.displayName}</p>
             <p className="truncate text-sm text-muted-foreground">
