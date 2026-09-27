@@ -1,6 +1,6 @@
 import { ApiError } from "@/lib/http";
 import { createClient } from "@/lib/supabase/server";
-import { getMovie, searchMovies } from "@/lib/tmdb";
+import { getMovie, searchMovies, trendingMovies } from "@/lib/tmdb";
 
 import {
   ENTRY_COLUMNS,
@@ -138,4 +138,8 @@ async function withEntries(userId: string, movies: MovieSummary[]) {
 
 export async function searchWithEntries(userId: string, q: string) {
   return withEntries(userId, await searchMovies(q));
+}
+
+export async function trendingWithEntries(userId: string) {
+  return withEntries(userId, (await trendingMovies()).slice(0, 12));
 }
