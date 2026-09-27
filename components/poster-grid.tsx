@@ -20,7 +20,7 @@ function PosterCard({ movie, chip }: { movie: Poster; chip: string | null }) {
       href={`/movie/${movie.tmdbId}`}
       className="group grid gap-2 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
-      <div className="relative aspect-2/3 overflow-hidden rounded-lg bg-muted transition duration-300 group-hover:shadow-xl group-hover:ring-2 group-hover:ring-primary/70 group-focus-visible:shadow-xl motion-safe:group-hover:-translate-y-1 motion-safe:group-focus-visible:-translate-y-1">
+      <div className="relative aspect-2/3 overflow-hidden rounded-lg bg-muted transition duration-300 group-hover:shadow-xl group-hover:ring-2 group-hover:ring-primary/70 group-focus-visible:shadow-xl group-focus-visible:ring-2 group-focus-visible:ring-primary/70 motion-safe:group-hover:-translate-y-1 motion-safe:group-focus-visible:-translate-y-1">
         <TmdbImage path={movie.posterPath} size="w342" />
         {chip && (
           <span className="absolute top-2 right-2 flex items-center gap-1 rounded-md bg-background/80 px-1.5 py-0.5 text-xs font-medium tabular-nums backdrop-blur">
