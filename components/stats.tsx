@@ -1,4 +1,32 @@
+import type { ReactNode } from "react";
+
 import type { Stats } from "@/services/dto";
+
+export function StatTiles({ stats }: { stats: Stats }) {
+  return (
+    <dl className="grid gap-3 sm:grid-cols-3">
+      <Tile
+        label="Watched"
+        value={stats.watchedCount}
+        caption={
+          stats.totalRuntimeMinutes > 0
+            ? `${formatTotalRuntime(stats.totalRuntimeMinutes)} of film`
+            : "Runtime unknown"
+        }
+      />
+      <Tile
+        label="Average rating"
+        value={stats.averageRating?.toFixed(1) ?? "–"}
+        caption={stats.averageRating === null ? "No ratings yet" : "out of 10"}
+      />
+      <Tile
+        label="Rated"
+        value={stats.ratedCount}
+        caption={`of ${stats.watchedCount} watched`}
+      />
+    </dl>
+  );
+}
 
 export function GenreBars({ genres }: Pick<Stats, "genres">) {
   const top = Math.max(...genres.map((genre) => genre.count));
@@ -48,4 +76,33 @@ export function RatingHistogram({ counts }: { counts: number[] }) {
       ))}
     </ol>
   );
+}
+
+function Tile({
+  label,
+  value,
+  caption,
+}: {
+  label: string;
+  value: ReactNode;
+  caption: string;
+}) {
+  return (
+    <div className="grid gap-1 rounded-lg border p-4">
+      <dt className="text-sm text-muted-foreground">{label}</dt>
+      <dd className="text-3xl font-semibold tabular-nums">{value}</dd>
+      <dd className="text-xs text-muted-foreground">{caption}</dd>
+    </div>
+  );
+}
+
+// A total can run to days, where minutes are noise, unlike a single film's runtime.
+function formatTotalRuntime(total: number) {
+  const days = Math.floor(total / 1440);
+  const hours = Math.floor(total / 60) % 24;
+  const units = days > 0 ? { d: days, h: hours } : { h: hours, m: total % 60 };
+  return Object.entries(units)
+    .filter(([, n]) => n > 0)
+    .map(([unit, n]) => `${n}${unit}`)
+    .join(" ");
 }

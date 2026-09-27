@@ -1,12 +1,10 @@
 import { ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
 
 import { EmptyState } from "@/components/empty-state";
+import { GenreBars, RatingHistogram, StatTiles } from "@/components/stats";
 import { requireUserId } from "@/lib/supabase/server";
 import { getStats } from "@/services/stats";
-
-import { GenreBars, RatingHistogram } from "./charts";
 
 export default async function StatsPage() {
   const stats = await getStats(await requireUserId());
@@ -25,29 +23,7 @@ export default async function StatsPage() {
   return (
     <div className="grid gap-8">
       <h1 className="text-2xl font-semibold tracking-tight">Stats</h1>
-      <dl className="grid gap-3 sm:grid-cols-3">
-        <Tile
-          label="Watched"
-          value={stats.watchedCount}
-          caption={
-            stats.totalRuntimeMinutes > 0
-              ? `${formatTotalRuntime(stats.totalRuntimeMinutes)} of film`
-              : "Runtime unknown"
-          }
-        />
-        <Tile
-          label="Average rating"
-          value={stats.averageRating?.toFixed(1) ?? "–"}
-          caption={
-            stats.averageRating === null ? "No ratings yet" : "out of 10"
-          }
-        />
-        <Tile
-          label="Rated"
-          value={stats.ratedCount}
-          caption={`of ${stats.watchedCount} watched`}
-        />
-      </dl>
+      <StatTiles stats={stats} />
       <Link
         href="/taste"
         className="flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors outline-none hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -84,33 +60,4 @@ export default async function StatsPage() {
       </div>
     </div>
   );
-}
-
-function Tile({
-  label,
-  value,
-  caption,
-}: {
-  label: string;
-  value: ReactNode;
-  caption: string;
-}) {
-  return (
-    <div className="grid gap-1 rounded-lg border p-4">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-3xl font-semibold tabular-nums">{value}</dd>
-      <dd className="text-xs text-muted-foreground">{caption}</dd>
-    </div>
-  );
-}
-
-// A total can run to days, where minutes are noise, unlike a single film's runtime.
-function formatTotalRuntime(total: number) {
-  const days = Math.floor(total / 1440);
-  const hours = Math.floor(total / 60) % 24;
-  const units = days > 0 ? { d: days, h: hours } : { h: hours, m: total % 60 };
-  return Object.entries(units)
-    .filter(([, n]) => n > 0)
-    .map(([unit, n]) => `${n}${unit}`)
-    .join(" ");
 }
