@@ -6,6 +6,15 @@ Search TMDB, keep a list of films to watch, rate the ones you've seen, see your 
 
 **Demo account:** `demo@example.com` / `watchlist-demo`. It has a rated history and follows sam and mira, so Stats, Taste profile, the Feed and their profiles are populated. You can also create your own account: email confirmation is off (see Assumptions).
 
+<img src="docs/screenshots/search-desktop.png" alt="Search results for Dune on desktop, with TMDB scores on the posters" width="100%">
+
+<p>
+  <img src="docs/screenshots/feed-phone.png" alt="The feed on a phone: films the people you follow rated" width="300">
+  <img src="docs/screenshots/taste-phone.png" alt="The AI taste profile on a phone, with films to watch next" width="300">
+</p>
+
+Phone and desktop captures of search, the watchlist, the feed, a member page and the taste profile are in [`docs/screenshots`](docs/screenshots).
+
 ## Features
 
 - Search TMDB, open a film's page (backdrop, runtime, genres, cast) and add it to your watchlist
