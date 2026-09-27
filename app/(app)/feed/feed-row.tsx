@@ -52,7 +52,7 @@ export function FeedRow({ item }: { item: FeedItem }) {
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
           {rating !== null && (
             <span className="flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 font-medium text-foreground tabular-nums">
-              <StarIcon className="size-3 fill-current" />
+              <StarIcon className="size-3 fill-current text-primary" />
               {rating}
               <span className="sr-only"> out of 10</span>
             </span>

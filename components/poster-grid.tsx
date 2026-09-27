@@ -28,7 +28,7 @@ function PosterCard({ movie, chip }: { movie: Poster; chip: string | null }) {
         />
         {chip && (
           <span className="absolute top-2 right-2 flex items-center gap-1 rounded-md bg-background/80 px-1.5 py-0.5 text-xs font-medium tabular-nums backdrop-blur">
-            <StarIcon className="size-3 fill-current" />
+            <StarIcon className="size-3 fill-current text-primary" />
             {chip}
           </span>
         )}
