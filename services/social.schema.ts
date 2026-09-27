@@ -8,3 +8,9 @@ export const memberQuerySchema = z.object({
     .transform((q) => q.replace(/^@/, ""))
     .pipe(z.string().min(1).max(40)),
 });
+
+// The cursor is the last row's watched_at, passed back exactly as Postgres wrote it: a Date would
+// drop the microseconds and skip rows at the page edge.
+export const feedQuerySchema = z.object({
+  before: z.iso.datetime({ offset: true }).optional(),
+});
