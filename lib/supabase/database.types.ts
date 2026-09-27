@@ -253,13 +253,59 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      feed: {
+        Args: { before?: string };
+        Returns: {
+          avatar_url: string;
+          display_name: string;
+          handle: string;
+          poster_path: string;
+          rating: number;
+          title: string;
+          tmdb_id: number;
+          watched_at: string;
+        }[];
+      };
       follow_member: { Args: { target_handle: string }; Returns: undefined };
+      friends_who_watched: {
+        Args: { tmdb_ids: number[] };
+        Returns: {
+          avatar_url: string;
+          display_name: string;
+          handle: string;
+          tmdb_id: number;
+        }[];
+      };
       list_following: {
         Args: never;
         Returns: {
           avatar_url: string;
           display_name: string;
           handle: string;
+        }[];
+      };
+      member_profile: {
+        Args: { target_handle: string };
+        Returns: {
+          avatar_url: string;
+          display_name: string;
+          follower_count: number;
+          following_count: number;
+          handle: string;
+          is_following: boolean;
+          is_self: boolean;
+        }[];
+      };
+      member_stats: { Args: { target_handle: string }; Returns: Json };
+      member_watched: {
+        Args: { target_handle: string };
+        Returns: {
+          poster_path: string;
+          rating: number;
+          release_year: number;
+          title: string;
+          tmdb_id: number;
+          watched_at: string;
         }[];
       };
       reserved_handles: { Args: never; Returns: string[] };
