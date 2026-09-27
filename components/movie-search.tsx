@@ -1,7 +1,7 @@
 "use client";
 
 import { SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { z } from "zod";
 
 import { PosterGrid, PosterGridSkeleton } from "@/components/poster-grid";
@@ -35,7 +35,14 @@ function search(q: string, signal: AbortSignal) {
 
 type Result = { q: string } & Awaited<ReturnType<typeof search>>;
 
-export function MovieSearch({ initialQuery }: { initialQuery: string }) {
+// Shows children (popular films) until there is something to search for.
+export function MovieSearch({
+  initialQuery,
+  children,
+}: {
+  initialQuery: string;
+  children: ReactNode;
+}) {
   const [query, setQuery] = useState(initialQuery);
   const [result, setResult] = useState<Result | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -79,7 +86,7 @@ export function MovieSearch({ initialQuery }: { initialQuery: string }) {
           className="pl-9"
         />
       </label>
-      <SearchResults q={q} result={result} onRetry={retry} />
+      {q ? <SearchResults q={q} result={result} onRetry={retry} /> : children}
     </div>
   );
 }
@@ -93,13 +100,6 @@ function SearchResults({
   result: Result | null;
   onRetry: () => void;
 }) {
-  if (!q) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Find a film to add it to your watchlist.
-      </p>
-    );
-  }
   // Results for an older query never render: a skeleton stands in until the current one answers.
   if (result?.q !== q) return <PosterGridSkeleton />;
   if (!result.data) {
