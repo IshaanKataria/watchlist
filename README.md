@@ -118,6 +118,7 @@ BASE_URL=https://watchlist-ashen-ten.vercel.app pnpm e2e
 - `BASE_URL` defaults to `http://localhost:3000`. Vercel previews sit behind Deployment Protection, which answers every request with its own 401, so point it at localhost or production.
 - It needs `.env.local`: setup creates `e2e_viewer`, `e2e_stranger` and `e2e_friend` with the service-role key. The local app and production share one Supabase project, so the global teardown deletes those accounts and reruns `pnpm seed`, pass or fail.
 - `e2e/security.spec.ts` checks the security model over HTTP: every API route answers 401 JSON when signed out, a user id in the body is ignored, malformed ratings, ids and queries get 400 and non-JSON bodies 415, following yourself is 400, following twice is 204 both times, an unknown handle is 404, a member who follows nobody sees no one's watched films, the Data API gives the publishable key nothing, and no page or JSON response contains a UUID.
+- `e2e/auth.spec.ts`: with JavaScript off, the login form posts, so a sign-in sent before the page hydrates never puts the email or password in the URL.
 - `e2e/core.spec.ts`: the demo account signs in, adds a film, marks it watched with a rating, sees Stats count it and removes it.
 - `e2e/social.spec.ts`: follow a member from search, find them in the feed and on their page, unfollow; a new handle keeps the people you follow; a feed of exactly 30 rows offers no Load more, and one of 35 loads the last 5 once, with no row repeated.
 
