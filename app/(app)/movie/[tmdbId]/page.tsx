@@ -1,10 +1,15 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FriendsAvatars } from "@/components/friends-avatars";
 import { TmdbImage } from "@/components/tmdb-image";
 import { WatchlistButton } from "@/components/watchlist-button";
 import { requireUserId } from "@/lib/supabase/server";
+import type { MemberDto } from "@/services/dto";
 import { getMovieWithEntry } from "@/services/watchlist";
 import { tmdbIdParamSchema } from "@/services/watchlist.schema";
+
+const handles = new Intl.ListFormat("en");
 
 function formatRuntime(minutes: number) {
   const hours = Math.floor(minutes / 60);
@@ -53,6 +58,7 @@ export default async function MoviePage({
               {movie.title}
             </h1>
             <p className="text-sm text-muted-foreground">{facts}</p>
+            {movie.friends.length > 0 && <WatchedBy friends={movie.friends} />}
             <WatchlistButton
               tmdbId={movie.tmdbId}
               title={movie.title}
@@ -92,5 +98,34 @@ export default async function MoviePage({
         </section>
       )}
     </article>
+  );
+}
+
+// Each handle links to its profile; the faces beside them are hidden, since the names say it all.
+function WatchedBy({ friends }: { friends: MemberDto[] }) {
+  return (
+    <p className="flex flex-wrap items-center gap-2 text-sm">
+      <span aria-hidden>
+        <FriendsAvatars friends={friends} />
+      </span>
+      <span>
+        Watched by{" "}
+        {handles
+          .formatToParts(friends.map((friend) => friend.handle))
+          .map((part, index) =>
+            part.type === "element" ? (
+              <Link
+                key={index}
+                href={`/u/${part.value}`}
+                className="rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                @{part.value}
+              </Link>
+            ) : (
+              part.value
+            ),
+          )}
+      </span>
+    </p>
   );
 }

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { Constants, type Tables } from "@/lib/supabase/database.types";
 
-const memberSchema = z.object({
+export const memberSchema = z.object({
   handle: z.string(),
   displayName: z.string(),
   avatarUrl: z.string().nullable(),
@@ -34,6 +34,23 @@ export function toMemberResultDto(
   row: MemberColumns & { is_following: boolean },
 ): MemberResult {
   return { ...toMemberDto(row), isFollowing: row.is_following };
+}
+
+// A member_profile() row. Counts are public; the films behind them are not.
+export function toMemberProfileDto(
+  row: MemberColumns & {
+    is_following: boolean;
+    is_self: boolean;
+    follower_count: number;
+    following_count: number;
+  },
+) {
+  return {
+    ...toMemberResultDto(row),
+    isSelf: row.is_self,
+    followerCount: row.follower_count,
+    followingCount: row.following_count,
+  };
 }
 
 // Schemas rather than bare types: the search box parses API responses with them.
@@ -92,6 +109,55 @@ export function toWatchlistItemDto({
 }
 
 export type WatchlistItem = ReturnType<typeof toWatchlistItemDto>;
+
+// Row types below come from the tables, not the functions: generated types mark every column a
+// function returns as non-null, but rating, poster_path and release_year can be null.
+type FilmColumns = Pick<Tables<"movies">, "tmdb_id" | "title" | "poster_path">;
+type Rating = Pick<Tables<"watchlist_entries">, "rating">;
+
+// A member_watched() row, for a poster grid.
+export function toWatchedFilmDto(
+  row: FilmColumns & Pick<Tables<"movies">, "release_year"> & Rating,
+) {
+  return {
+    tmdbId: row.tmdb_id,
+    title: row.title,
+    year: row.release_year,
+    posterPath: row.poster_path,
+    rating: row.rating,
+  };
+}
+
+export type WatchedFilm = ReturnType<typeof toWatchedFilmDto>;
+
+// A schema because the feed's Load more button parses API pages with it.
+export const feedItemSchema = z.object({
+  member: memberSchema,
+  movie: movieSummarySchema.pick({
+    tmdbId: true,
+    title: true,
+    posterPath: true,
+  }),
+  rating: z.number().nullable(),
+  watchedAt: z.string(),
+});
+
+export type FeedItem = z.infer<typeof feedItemSchema>;
+
+export function toFeedItemDto(
+  row: MemberColumns & FilmColumns & Rating & { watched_at: string },
+): FeedItem {
+  return {
+    member: toMemberDto(row),
+    movie: {
+      tmdbId: row.tmdb_id,
+      title: row.title,
+      posterPath: row.poster_path,
+    },
+    rating: row.rating,
+    watchedAt: row.watched_at,
+  };
+}
 
 const countSchema = z.number().int().nonnegative();
 

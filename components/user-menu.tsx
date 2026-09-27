@@ -1,11 +1,11 @@
 "use client";
 
-import { LogOutIcon, SettingsIcon, UsersIcon } from "lucide-react";
+import { LogOutIcon, SettingsIcon, UserIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MemberAvatar } from "@/components/member-avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,12 +38,7 @@ export function UserMenu({ me }: { me: MemberDto }) {
         aria-label="Account menu"
         className="flex h-16 items-center justify-center outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:ml-auto md:size-11 md:rounded-full"
       >
-        <Avatar>
-          {me.avatarUrl && <AvatarImage src={me.avatarUrl} alt="" />}
-          <AvatarFallback>
-            {[...me.displayName][0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <MemberAvatar member={me} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-48">
         <DropdownMenuGroup>
@@ -55,6 +50,10 @@ export function UserMenu({ me }: { me: MemberDto }) {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <DropdownMenuItem render={<Link href={`/u/${me.handle}`} />}>
+          <UserIcon />
+          My profile
+        </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/members" />}>
           <UsersIcon />
           Find members

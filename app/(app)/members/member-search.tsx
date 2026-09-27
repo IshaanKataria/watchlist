@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { errorMessage } from "@/lib/api";
+import { getJson } from "@/lib/api";
 import { memberResultSchema } from "@/services/dto";
 import { memberQuerySchema } from "@/services/social.schema";
 
@@ -14,14 +14,12 @@ import { MemberList, MemberListSkeleton } from "./member-list";
 
 const responseSchema = z.object({ members: z.array(memberResultSchema) });
 
-async function search(q: string, signal: AbortSignal) {
-  const res = await fetch(`/api/members?${new URLSearchParams({ q })}`, {
+function search(q: string, signal: AbortSignal) {
+  return getJson(
+    `/api/members?${new URLSearchParams({ q })}`,
+    responseSchema,
     signal,
-  }).catch(() => null);
-  const body: unknown = await res?.json().catch(() => null);
-  const data = responseSchema.safeParse(body);
-  if (res?.ok && data.success) return { members: data.data.members };
-  return { error: errorMessage(body) };
+  );
 }
 
 type Result = { q: string } & Awaited<ReturnType<typeof search>>;
@@ -86,7 +84,7 @@ function SearchResults({
 }) {
   // Results for another query never render: a skeleton stands in until the current one answers.
   if (result?.q !== q) return <MemberListSkeleton />;
-  if (!result.members) {
+  if (!result.data) {
     return (
       <div role="alert" className="grid justify-items-start gap-3">
         <p className="text-sm">{result.error}</p>
@@ -96,12 +94,12 @@ function SearchResults({
       </div>
     );
   }
-  if (result.members.length === 0) {
+  if (result.data.members.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
         No members match &ldquo;{q}&rdquo;.
       </p>
     );
   }
-  return <MemberList members={result.members} />;
+  return <MemberList members={result.data.members} />;
 }

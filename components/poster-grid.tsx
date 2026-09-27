@@ -2,11 +2,14 @@ import { StarIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { FriendsAvatars } from "@/components/friends-avatars";
 import { TmdbImage } from "@/components/tmdb-image";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { MovieSummary } from "@/services/dto";
+import type { MemberDto, MovieSummary } from "@/services/dto";
 
-type Poster = Pick<MovieSummary, "tmdbId" | "title" | "year" | "posterPath">;
+type Poster = Pick<MovieSummary, "tmdbId" | "title" | "year" | "posterPath"> & {
+  friends?: MemberDto[];
+};
 
 const GRID =
   "grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6";
@@ -28,6 +31,13 @@ function PosterCard({ movie, chip }: { movie: Poster; chip: string | null }) {
             <StarIcon className="size-3 fill-current" />
             {chip}
           </span>
+        )}
+        {/* Inside the card's link, not links of their own: the faces are too small to tap. */}
+        {movie.friends && movie.friends.length > 0 && (
+          <FriendsAvatars
+            friends={movie.friends}
+            className="absolute bottom-2 left-2"
+          />
         )}
       </div>
       <div>

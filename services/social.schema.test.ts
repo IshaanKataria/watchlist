@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { memberQuerySchema } from "./social.schema";
+import { feedQuerySchema, memberQuerySchema } from "./social.schema";
 
 describe("memberQuerySchema", () => {
   it.each([
@@ -19,4 +19,25 @@ describe("memberQuerySchema", () => {
   it("rejects a missing query", () => {
     expect(memberQuerySchema.safeParse({}).success).toBe(false);
   });
+});
+
+describe("feedQuerySchema", () => {
+  it("allows no cursor, for the first page", () => {
+    expect(feedQuerySchema.parse({})).toEqual({});
+  });
+
+  it.each([
+    "2026-09-25T18:42:23.751234+00:00",
+    "2026-09-25T18:42:23.751+00:00",
+    "2026-09-25T18:42:23Z",
+  ])("keeps %j exactly as sent", (before) => {
+    expect(feedQuerySchema.parse({ before }).before).toBe(before);
+  });
+
+  it.each(["", "yesterday", "2026-09-25", "2026-09-25T18:42:23", "1727289743"])(
+    "rejects %j",
+    (before) => {
+      expect(feedQuerySchema.safeParse({ before }).success).toBe(false);
+    },
+  );
 });
