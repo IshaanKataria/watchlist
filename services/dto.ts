@@ -53,6 +53,16 @@ export function toMemberProfileDto(
   };
 }
 
+// A taste_match() row. match_percent is null below 3 shared films, which the generated type misses.
+export function toTasteMatchDto(row: {
+  shared_count: number;
+  match_percent: number | null;
+}) {
+  return { sharedCount: row.shared_count, matchPercent: row.match_percent };
+}
+
+export type TasteMatch = ReturnType<typeof toTasteMatchDto>;
+
 // Schemas rather than bare types: the search box parses API responses with them.
 export const movieSummarySchema = z.object({
   tmdbId: z.number().int().positive(),

@@ -35,14 +35,19 @@
       ["The Shining", 1980, 9],
       ["Hereditary", 2018, 9],
       ["Get Out", 2017, 9],
+      ["Parasite", 2019, 9],
+      ["Inception", 2010, 9],
       ["Aliens", 1986, 8],
       ["Arrival", 2016, 8],
       ["Annihilation", 2018, 8],
       ["Ex Machina", 2015, 8],
+      ["Fight Club", 1999, 8],
       ["It Follows", 2015, 7],
+      ["Jurassic World", 2015, 7],
       ["Event Horizon", 1997, 6],
       ["Prometheus", 2012, 5],
       ["The Notebook", 2004, 3],
+      ["Marriage Story", 2019, 3],
       ["Mamma Mia!", 2008, 2]
     ],
     "toWatch": [
@@ -62,16 +67,20 @@
       ["The Florida Project", 2017, 9],
       ["Minari", 2021, 9],
       ["Everything Everywhere All at Once", 2022, 9],
+      ["Past Lives", 2023, 9],
+      ["Manchester by the Sea", 2016, 9],
       ["The Lighthouse", 2019, 8],
       ["First Reformed", 2018, 8],
       ["Uncut Gems", 2019, 7],
       ["The Green Knight", 2021, 7],
+      ["Whiplash", 2014, 6],
       ["Midsommar", 2019, 6],
       ["Avengers: Endgame", 2019, 4],
-      ["Transformers: Age of Extinction", 2014, 2]
+      ["Fight Club", 1999, 3],
+      ["Transformers: Age of Extinction", 2014, 2],
+      ["Black Adam", 2022, 1]
     ],
     "toWatch": [
-      ["Past Lives", 2023],
       ["Priscilla", 2023],
       ["The Zone of Interest", 2023],
       ["Civil War", 2024]

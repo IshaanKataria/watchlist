@@ -11,6 +11,7 @@ export default function MemberLoading() {
           <Skeleton className="h-7 w-1/2" />
           <Skeleton className="h-5 w-1/4" />
           <Skeleton className="h-4 w-1/3" />
+          <Skeleton className="h-4 w-2/5" />
         </div>
         <Skeleton className="h-11 w-full rounded-lg sm:w-28" />
       </div>

@@ -318,6 +318,13 @@ export type Database = {
           is_following: boolean;
         }[];
       };
+      taste_match: {
+        Args: { target_handle: string };
+        Returns: {
+          match_percent: number;
+          shared_count: number;
+        }[];
+      };
       unfollow_member: { Args: { target_handle: string }; Returns: undefined };
       user_stats: { Args: { target: string }; Returns: Json };
     };

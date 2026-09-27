@@ -7,7 +7,7 @@ import { PosterGrid } from "@/components/poster-grid";
 import { GenreBars, StatTiles } from "@/components/stats";
 import { buttonVariants } from "@/components/ui/button";
 import { requireUserId } from "@/lib/supabase/server";
-import type { Stats, WatchedFilm } from "@/services/dto";
+import type { Stats, TasteMatch, WatchedFilm } from "@/services/dto";
 import { handleSchema } from "@/services/profiles.schema";
 import { getMember } from "@/services/social";
 
@@ -37,6 +37,7 @@ export default async function MemberPage({ params }: PageProps<"/u/[handle]">) {
             </span>{" "}
             following
           </p>
+          {member.tasteMatch && <TasteMatchLine match={member.tasteMatch} />}
         </div>
         {/* Its own row on phones, so the name and counts keep the width. */}
         <div className="w-full sm:w-auto">
@@ -63,6 +64,30 @@ export default async function MemberPage({ params }: PageProps<"/u/[handle]">) {
         watched={member.watched}
       />
     </div>
+  );
+}
+
+// tasteMatch is null unless the caller follows this member, so it never shows on your own page.
+function TasteMatchLine({ match }: { match: TasteMatch }) {
+  if (match.matchPercent === null) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Rate 3 films in common to see your taste match ({match.sharedCount} so
+        far)
+      </p>
+    );
+  }
+  return (
+    <p className="text-sm text-muted-foreground">
+      <span className="font-medium text-primary tabular-nums">
+        {match.matchPercent}%
+      </span>{" "}
+      taste match ·{" "}
+      <span className="font-medium text-foreground tabular-nums">
+        {match.sharedCount}
+      </span>{" "}
+      films in common
+    </p>
   );
 }
 
