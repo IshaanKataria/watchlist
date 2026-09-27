@@ -1,10 +1,10 @@
-# Watchlist — movie watchlist tracker
+# Watchlist
 
-Search TMDB, keep a list of films to watch, rate the ones you've seen, see your stats and get an AI read on your taste. Built for the MAC Projects Take-Home Assessment 2026.
+A Letterboxd-style film tracker I built for the MAC Projects take-home.
 
-**Live:** https://watchlist-ashen-ten.vercel.app · **Author:** Ishaan Kataria · ishaankataria3@gmail.com
+Live: https://watchlist-ashen-ten.vercel.app
 
-**Demo account:** `demo@example.com` / `watchlist-demo`. It has a rated history and follows sam and mira, so Stats, Taste profile, the Feed and their profiles are populated. You can also create your own account: email confirmation is off (see Assumptions).
+Demo login: `demo@example.com` / `watchlist-demo`. `sam@example.com` and `mira@example.com` use the same password. Demo follows both of them, so the feed, stats and taste profile already have something in them. You can also sign up with any email, since confirmation is off.
 
 <img src="docs/screenshots/search-desktop.png" alt="Search results for Dune on desktop, with TMDB scores on the posters" width="100%">
 
@@ -13,42 +13,66 @@ Search TMDB, keep a list of films to watch, rate the ones you've seen, see your 
   <img src="docs/screenshots/taste-phone.png" alt="The AI taste profile on a phone, with films to watch next" width="300">
 </p>
 
-Phone and desktop captures of search, the watchlist, the feed, a member page and the taste profile are in [`docs/screenshots`](docs/screenshots).
+More phone and desktop captures are in [`docs/screenshots`](docs/screenshots).
 
-## Features
+## What it does
 
-- Search TMDB, open a film's page (backdrop, runtime, genres, cast) and add it to your watchlist
-- Mark a film watched with a 1–10 rating (or skip the rating), change it later, move it back, or remove it with undo
-- Stats computed in SQL: films watched and rated, average rating, total runtime, genre breakdown, rating histogram
-- AI taste profile: a short critic's read on your ratings and 3–5 films to watch next, each citing a film you rated
-- Friend system: change your handle, find members by name or @handle and follow them. The feed lists the films the people you follow watch and rate, a member's page shows their stats and watched films once you follow them, and posters show which of them watched a film
-- Mobile-first: a bottom tab bar under `md`, bottom-sheet drawers instead of dialogs, a 2 to 6 column poster grid, 44px touch targets
+- Search TMDB and open a film's page with its backdrop, runtime, genres and cast.
+- Keep a to-watch list. Mark a film watched, rate it 1 to 10 or skip the rating, change it later, or remove it with undo.
+- Stats worked out in SQL: films watched and rated, average rating, total runtime, genres and a rating histogram.
+- An AI taste profile. It gives a short critic's read of your ratings and 3 to 5 films to watch next, each tied to a film you rated.
+- Pick a handle, find people and follow them. The feed shows what they watch and rate, their page shows their stats and films, and posters show which of them saw a film.
+- Phone first: a bottom tab bar, bottom sheets instead of dialogs, a 2 to 6 column poster grid and 44px touch targets.
 
-## Stack
+## Checks from the brief
 
-Next.js 16 (App Router, TypeScript) · Tailwind v4 + shadcn/ui on Base UI · Supabase (Postgres, Auth, RLS) · Zod · Vercel AI SDK 7 + `@ai-sdk/anthropic` · TMDB API · Vitest · Playwright · Vercel
+- Rows are keyed by the Supabase auth user id, never an email. `supabase/migrations/0001_profiles.sql`
+- The user id only comes from the session, so an id sent in a body, query or header is ignored. `lib/http.ts`, `services/watchlist.schema.ts`
+- Every API route answers 401 JSON when you're signed out, never a redirect. `lib/http.ts`, `proxy.ts`
+- You only see the watched films of people you follow. To-watch lists stay private. `supabase/migrations/0009_feed.sql`
+- Following is idempotent (204 every time) and following yourself is a 400. `supabase/migrations/0008_social.sql`, `services/social.ts`
+- Follows are keyed on user ids, not handles, so a rename keeps them. `supabase/migrations/0008_social.sql`
+- No member id reaches the browser. Members go by handle and list entries by TMDB id. `services/dto.ts`
 
-## Run locally
+`e2e/security.spec.ts` checks most of these over HTTP.
 
-Needs Node 22.18+ (`pnpm seed` runs TypeScript through Node's type stripping), pnpm and the Supabase CLI. Vercel builds on Node 22.x, set by `engines` in `package.json`.
+## Assumptions
 
-```bash
-pnpm install
-cp .env.example .env.local        # fill in the values; each one is described in the file
-supabase link --project-ref <ref>
-pnpm db:push                      # applies supabase/migrations
-pnpm seed                         # creates demo, sam and mira with a rated history (uses the service-role key)
-pnpm dev
-```
+- Email confirmation is off so anyone can sign up. Supabase's built-in mailer only delivers to project members. In production I'd add an SMTP provider and turn confirmation back on.
+- Films only. The `movies` table is a snapshot of each listed film's display fields, not a copy of TMDB.
+- Adding a film always makes a to-watch entry. Status and rating change after that.
+- Only a watched film has a rating. Moving it back to to-watch clears it.
+- Handles are made at sign-up from your email or Google name: a to z, 0 to 9 and underscores, 3 to 20 characters, a number added on a clash, and a short reserved list.
+- The taste profile needs 3 rated films. An unchanged history gets the saved profile back with no model call. A changed one can regenerate once a minute.
+- You see only the accounts you follow, and only their watched films with ratings and dates. To-watch lists are private. Anyone signed in can find a member and see their handle, name, avatar and follower counts, nothing more.
+- The feed is newest first, 30 at a time. Marking a film watched is the event, so changing the rating later updates the row but doesn't move it.
+- Functions run in Sydney (`syd1` in `vercel.json`), next to the Supabase region.
 
-## Architecture
+## Author
 
-- **Pages** are Server Components that call `services/` directly. Services are the only code that touches tables, always through the member's own Supabase client, so RLS applies to every read and write.
-- **Mutations** go from the browser to route handlers under `app/api`. Each one is `route(async (req) => { requireUser(); parse with Zod; call the service; return a status })`, and `route()` maps every failure to `{ error: { code, message } }` with the right status. Route handlers rather than server actions because the contract is plain HTTP (401, 400, 404, 409, 415, 429) that anyone can check with curl.
-- **Auth** is Supabase Auth. The browser's Supabase client only signs in and out; it never reads data. `proxy.ts` refreshes the session with `getClaims()` and sends signed-out pages to `/login`. It skips `/api`, which answers 401 JSON itself.
-- **Stats** come from one SQL function, `user_stats()`, which runs as the caller so RLS still decides which rows it sees.
-- **Cross-member reads** (member search, the feed, member pages, friends who watched) go through `security definer` functions that take handles, act as `auth.uid()`, check the follow graph and return no ids. Every table stays owner-only; `member_stats()` reuses `user_stats()` once the follow check passes.
-- **Films** are called live from TMDB for search and film pages. Adding a film snapshots its display fields into `movies` so stats can be computed in SQL.
+Ishaan Kataria · ishaankataria3@gmail.com
+
+<details>
+<summary>Architecture</summary>
+
+Next.js 16 (App Router, TypeScript), Tailwind v4 with shadcn/ui on Base UI, Supabase (Postgres, Auth, RLS), Zod, the Vercel AI SDK 7 with `@ai-sdk/anthropic`, the TMDB API, Vitest and Playwright. Hosted on Vercel.
+
+Pages are Server Components that call `services/` directly. Services are the only code that touches tables, and they always use the signed-in member's own Supabase client, so RLS applies to every read and write.
+
+Mutations go from the browser to route handlers under `app/api`. Every handler has the same shape: `route(async (req) => { requireUser(); parse with Zod; call the service; return a status })`. `route()` turns every failure into `{ error: { code, message } }` with the right status. I picked route handlers over server actions because the contract is plain HTTP (401, 400, 404, 409, 415, 429), which anyone can check with curl.
+
+Auth is Supabase Auth. The browser's Supabase client only signs in and out. It never reads data. `proxy.ts` refreshes the session with `getClaims()` and sends signed-out pages to `/login`. It skips `/api`, which answers 401 JSON itself.
+
+Stats come from one SQL function, `user_stats()`. It runs as the caller, so RLS still decides which rows it sees.
+
+Reads across members (member search, the feed, member pages, friends who watched) go through `security definer` functions. They take handles, act as `auth.uid()`, check the follow graph and return no ids. Every table stays owner-only, and `member_stats()` reuses `user_stats()` once the follow check passes.
+
+Search and film pages call TMDB live. Adding a film snapshots its display fields into `movies`, so stats can run in SQL.
+
+</details>
+
+<details>
+<summary>Data model</summary>
 
 ```mermaid
 erDiagram
@@ -61,7 +85,10 @@ erDiagram
   profiles ||--o{ follows : "followee_id"
 ```
 
-## Security model
+</details>
+
+<details>
+<summary>Security details</summary>
 
 | Requirement                                      | How it's satisfied                                                                                                                                                                                                                                                                                                   | Where                                                                          |
 | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -81,30 +108,24 @@ erDiagram
 | To-watch lists stay private                      | Every cross-member function filters `status = 'watched'`; `watchlist_entries` itself stays owner-only under RLS                                                                                                                                                                                                      | `0009_feed.sql`, `0004_watchlist.sql`                                          |
 | Cross-member reads need a session                | The feed, member and friends functions are executable by `authenticated` only, so the publishable key without a session is refused; they take handles or TMDB ids and return handles and film data, never ids                                                                                                        | `0009_feed.sql`                                                                |
 
-## Assumptions
+</details>
 
-- Email confirmation is off so reviewers can sign up with any address (Supabase's built-in mailer only delivers to project members). In production this would use a custom SMTP provider with confirmation on.
-- Movies only. The `movies` table is a snapshot of each watchlisted film's display fields, not a mirror of TMDB.
-- Adding a film always creates a to-watch entry; status and rating change via PATCH.
-- A rating exists only on a watched film; moving a film back to "to watch" clears it.
-- Handles are generated at sign-up from the email or Google name (`a–z 0–9 _`, 3–20 characters, a numeric suffix on collision, a short reserved list).
-- The taste profile needs at least 3 rated films. An unchanged history returns the saved profile without a model call; a changed history can regenerate at most once a minute.
-- Functions are pinned to `syd1` (`vercel.json`), next to the Sydney Supabase region.
-- Visibility: you see only the accounts you follow, and of those only watched films with their ratings and watched dates. To-watch lists are private to their owner. Any signed-in member can find another and see their handle, name, avatar and follower and following counts, nothing more, until they follow them.
-- The feed shows the watched films of the people you follow, newest first, 30 at a time. Marking a film watched is the event: a later rating change updates the row but doesn't move it, since `watched_at` is the first time the film was marked watched.
+<details>
+<summary>AI taste profile notes</summary>
 
-## AI taste profile
+- It uses Claude Sonnet 5 through the Vercel AI SDK: `generateText` with a Zod output schema. The model id comes from `AI_MODEL`, so switching models is an env change.
+- The prompt holds the 60 most recent ratings plus every title on the list, so it never recommends a film you already listed. Each suggestion is matched on TMDB by title and year, so it links to a real film page. Unmatched or already listed suggestions are dropped.
+- The saved profile keeps a hash of exactly what the model was sent. If nothing changed, the saved profile comes back with no model call. If the list changed, regenerating is limited to once a minute. The API answers 429 with `Retry-After`, and the page disables Regenerate until then.
+- Cost limits: 2000 output tokens per draft, one retry when a draft breaks the schema or matches fewer than 3 films, and 45 seconds across both.
 
-- Claude Sonnet 5 through the Vercel AI SDK: `generateText` with a Zod output schema. The model id comes from `AI_MODEL`, so swapping models is an env change.
-- The prompt holds the 60 most recent ratings plus every title on the list, so recommendations never repeat a listed film. Each suggestion is matched against TMDB by title and year so it links to a real film page; unmatched or already-listed suggestions are dropped.
-- The saved profile carries a hash of exactly what the model was sent. If nothing changed, the saved profile comes back with no model call. If the list changed, regenerating is limited to once a minute: the API answers 429 with `Retry-After`, and the page disables Regenerate until then.
-- Cost guards: 2000 output tokens per draft, one retry when a draft breaks the schema or matches fewer than 3 films, and a 45-second budget across both.
+</details>
 
-## Testing
+<details>
+<summary>Testing</summary>
 
-`pnpm check` runs typecheck, lint, the Prettier check and the unit tests; CI runs it on every push and pull request.
+`pnpm check` runs typecheck, lint, the Prettier check and the unit tests. CI runs it on every push and pull request.
 
-**Unit** (`pnpm test`, Vitest) covers the pure logic:
+Unit tests (`pnpm test`, Vitest) cover the pure logic:
 
 - Request schemas: TMDB ids, rating bounds (0, 11, 7.5 and "ten" are rejected), a spoofed user id dropped, non-canonical id params like `1e3` rejected
 - `parseJson` and `parseQuery`: non-JSON content types get a 415, a charset suffix is accepted, a bad query string is a 400
@@ -116,7 +137,7 @@ erDiagram
 - Follow errors: an unknown handle maps to 404, following yourself to 400, anything else to 500
 - Feed cursor parsing (a Postgres timestamp passes back verbatim) and the feed, member profile and watched-film mappers
 
-**End to end** (`pnpm e2e`, Playwright) runs on Desktop Chrome and iPhone 14 (WebKit), one test at a time; the security spec is plain HTTP, so it runs on Desktop Chrome only:
+End to end tests (`pnpm e2e`, Playwright) run on Desktop Chrome and iPhone 14 (WebKit), one test at a time. The security spec is plain HTTP, so it only runs on Desktop Chrome.
 
 ```bash
 pnpm exec playwright install chromium webkit    # once
@@ -125,21 +146,52 @@ BASE_URL=https://watchlist-ashen-ten.vercel.app pnpm e2e
 ```
 
 - `BASE_URL` defaults to `http://localhost:3000`. Vercel previews sit behind Deployment Protection, which answers every request with its own 401, so point it at localhost or production.
-- It needs `.env.local`: setup creates `e2e_viewer`, `e2e_stranger` and `e2e_friend` with the service-role key. The local app and production share one Supabase project, so the global teardown deletes those accounts and reruns `pnpm seed`, pass or fail.
-- `e2e/security.spec.ts` checks the security model over HTTP: every API route answers 401 JSON when signed out, a user id in the body is ignored, malformed ratings, ids and queries get 400 and non-JSON bodies 415, following yourself is 400, following twice is 204 both times, an unknown handle is 404, a member who follows nobody sees no one's watched films, the Data API gives the publishable key nothing, and no page or JSON response contains a UUID.
-- `e2e/auth.spec.ts`: with JavaScript off, the login form posts, so a sign-in sent before the page hydrates never puts the email or password in the URL.
+- It needs `.env.local`. Setup creates `e2e_viewer`, `e2e_stranger` and `e2e_friend` with the service-role key. The local app and production share one Supabase project, so the global teardown deletes those accounts and reruns `pnpm seed`, pass or fail.
+- `e2e/security.spec.ts` checks the security model over HTTP. Every API route answers 401 JSON when signed out, a user id in the body is ignored, malformed ratings, ids and queries get 400 and non-JSON bodies 415, following yourself is 400, following twice is 204 both times, an unknown handle is 404, a member who follows nobody sees no one's watched films, the Data API gives the publishable key nothing, and no page or JSON response contains a UUID.
+- `e2e/auth.spec.ts`: with JavaScript off the login form posts, so a sign-in sent before the page hydrates never puts the email or password in the URL.
 - `e2e/core.spec.ts`: the demo account signs in, adds a film, marks it watched with a rating, sees Stats count it and removes it.
-- `e2e/social.spec.ts`: follow a member from search, find them in the feed and on their page, unfollow; a new handle keeps the people you follow; a feed of exactly 30 rows offers no Load more, and one of 35 loads the last 5 once, with no row repeated.
+- `e2e/social.spec.ts`: follow a member from search, find them in the feed and on their page, unfollow. A new handle keeps the people you follow. A feed of exactly 30 rows offers no Load more, and one of 35 loads the last 5 once, with no row repeated.
 
-## Known limitations
+</details>
 
-- The regenerate limit checks, then acts: parallel requests straight after a list change can each pay for a model call. The page disables the button while one is running.
+<details>
+<summary>Known limitations</summary>
+
+- The regenerate limit checks, then acts. Parallel requests straight after a list change can each pay for a model call. The page disables the button while one is running.
 - Search shows TMDB's first page of results (20 films).
-- The watchlist and a member's watched films are not paginated.
-- The feed pages by `watched_at` alone, so entries sharing one timestamp across a page edge are skipped past. The app marks one film watched per request; only a bulk SQL update, which stamps every row with its transaction's `now()`, would create such a tie.
-- Friends who watched covers the first 500 films of a grid; only a watchlist longer than that could pass it.
-- An unknown film or member page shows Not found with a 200 status: its loading skeleton streams before the page knows the film or member doesn't exist.
-- Passwords aren't checked against known breaches: Supabase offers that check on paid plans only.
+- The watchlist and a member's watched films aren't paginated.
+- The feed pages by `watched_at` alone, so entries sharing one timestamp across a page edge get skipped. The app marks one film watched per request, so only a bulk SQL update, which stamps every row with its transaction's `now()`, could create that tie.
+- Friends who watched covers the first 500 films of a grid. Only a watchlist longer than that could pass it.
+- An unknown film or member page shows Not found with a 200 status, because its loading skeleton streams before the page knows the film or member doesn't exist.
+- Passwords aren't checked against known breaches. Supabase only offers that on paid plans.
+
+</details>
+
+<details>
+<summary>Running it locally</summary>
+
+Needs Node 22.18+, pnpm and a Supabase project (run `supabase link` and `pnpm db:push` on a new one).
+
+```bash
+git clone https://github.com/IshaanKataria/watchlist && cd watchlist && pnpm i
+cp .env.example .env.local   # each key is described in the file
+pnpm dev
+```
+
+`pnpm seed` resets the demo accounts.
+
+</details>
+
+<details>
+<summary>What I'd build next</summary>
+
+- Letterboxd CSV import
+- Short reviews and diary entries
+- Custom lists
+- A privacy toggle for member pages
+- TV support, which the brief left out of scope
+
+</details>
 
 ---
 
