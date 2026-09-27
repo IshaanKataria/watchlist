@@ -9,11 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WatchlistButton } from "@/components/watchlist-button";
 import { errorMessage } from "@/lib/api";
-import { entrySchema, movieSummarySchema } from "@/services/dto";
+import { entrySchema, memberSchema, movieSummarySchema } from "@/services/dto";
 
 const responseSchema = z.object({
   results: z.array(
-    movieSummarySchema.extend({ entry: entrySchema.nullable() }),
+    movieSummarySchema.extend({
+      entry: entrySchema.nullable(),
+      friends: z.array(memberSchema),
+    }),
   ),
 });
 
