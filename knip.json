@@ -4,5 +4,8 @@
   "ignoreDependencies": ["server-only"],
   "ignoreIssues": {
     "lib/supabase/database.types.ts": ["types"]
+  },
+  "playwright": {
+    "entry": ["e2e/*.spec.ts", "e2e/auth.setup.ts"]
   }
 }
