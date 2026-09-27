@@ -24,7 +24,8 @@ function toSummary(movie: z.infer<typeof movieSchema>) {
   } satisfies MovieSummary;
 }
 
-const searchSchema = z.object({ results: z.array(movieSchema) });
+// One page of films, as search and trending both answer.
+const pageSchema = z.object({ results: z.array(movieSchema) });
 
 const detailSchema = movieSchema.extend({
   backdrop_path: z.string().nullable(),
@@ -76,8 +77,13 @@ export async function searchMovies(q: string) {
   const data = await tmdb(
     "/search/movie",
     { query: q, include_adult: "false" },
-    searchSchema,
+    pageSchema,
   );
+  return data?.results.map(toSummary) ?? [];
+}
+
+export async function trendingMovies() {
+  const data = await tmdb("/trending/movie/week", {}, pageSchema);
   return data?.results.map(toSummary) ?? [];
 }
 
