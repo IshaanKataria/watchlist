@@ -27,8 +27,8 @@ export default function MemberLoading() {
           ))}
         </div>
       </div>
-      <div className="grid gap-4">
-        <Skeleton className="h-7 w-24" aria-hidden />
+      <div className="grid gap-4" aria-hidden>
+        <Skeleton className="h-7 w-24" />
         <PosterGridSkeleton actions={false} />
       </div>
     </div>

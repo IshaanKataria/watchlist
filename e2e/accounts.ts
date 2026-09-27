@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 
-import type { Database } from "@/lib/supabase/database.types";
+import type { Database, TablesInsert } from "@/lib/supabase/database.types";
 
 // Service role, like scripts/seed.mts: accounts and fixture rows are set up outside the app.
 export const admin = createClient<Database>(
@@ -102,12 +102,12 @@ export async function setWatched(handle: string, n: number) {
   await admin
     .from("watchlist_entries")
     .insert(
-      films.map(({ tmdb_id }, index) => {
+      films.map(({ tmdb_id }, index): TablesInsert<"watchlist_entries"> => {
         const at = new Date(now - index * 60_000).toISOString();
         return {
           user_id: userId,
           tmdb_id,
-          status: "watched" as const,
+          status: "watched",
           rating: (index % 10) + 1,
           added_at: at,
           watched_at: at,
