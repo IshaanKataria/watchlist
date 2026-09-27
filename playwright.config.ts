@@ -11,6 +11,8 @@ export default defineConfig({
   testDir: "e2e",
   // Every spec shares one database and the demo account, so tests take turns.
   workers: 1,
+  // A dev server compiles each route on first visit and can take seconds to answer a refresh.
+  expect: { timeout: 10_000 },
   globalTeardown: "./e2e/global-teardown.ts",
   use: { baseURL, trace: "retain-on-failure" },
   projects: [

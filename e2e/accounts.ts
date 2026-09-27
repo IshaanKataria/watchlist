@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/supabase/database.types";
@@ -43,8 +43,22 @@ export async function signIn(page: Page, email: string, password = PASSWORD) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  const submit = page.getByRole("button", { name: "Sign in", exact: true });
+  await hydrated(submit);
+  await submit.click();
   await page.waitForURL("**/search");
+}
+
+// React tags each element once it hydrates it. Typing into or clicking a server-rendered control
+// before then never reaches the app, and the dev server can take seconds to get there.
+export async function hydrated(control: Locator) {
+  await expect
+    .poll(() =>
+      control.evaluate((element) =>
+        Object.keys(element).some((key) => key.startsWith("__reactProps")),
+      ),
+    )
+    .toBe(true);
 }
 
 export async function profileId(handle: string) {
