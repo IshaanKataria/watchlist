@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <>
-      <header className="md:sticky md:top-0 md:z-40 md:border-b md:bg-background/95 md:backdrop-blur">
+      <header className="md:sticky md:top-0 md:z-40 md:border-b md:border-border/50 md:bg-background/70 md:backdrop-blur-md">
         {/* One nav: a bottom tab bar on phones, the top bar from md up. */}
         <nav
           aria-label="Main"
