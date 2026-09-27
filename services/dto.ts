@@ -2,9 +2,20 @@ import { z } from "zod";
 
 import { Constants, type Tables } from "@/lib/supabase/database.types";
 
-export function toMemberDto(
-  profile: Pick<Tables<"profiles">, "handle" | "display_name" | "avatar_url">,
-) {
+const memberSchema = z.object({
+  handle: z.string(),
+  displayName: z.string(),
+  avatarUrl: z.string().nullable(),
+});
+
+export type MemberDto = z.infer<typeof memberSchema>;
+
+type MemberColumns = Pick<
+  Tables<"profiles">,
+  "handle" | "display_name" | "avatar_url"
+>;
+
+export function toMemberDto(profile: MemberColumns): MemberDto {
   return {
     handle: profile.handle,
     displayName: profile.display_name,
@@ -12,7 +23,18 @@ export function toMemberDto(
   };
 }
 
-export type MemberDto = ReturnType<typeof toMemberDto>;
+// A search_members() row: a member, and whether the caller follows them.
+export const memberResultSchema = memberSchema.extend({
+  isFollowing: z.boolean(),
+});
+
+export type MemberResult = z.infer<typeof memberResultSchema>;
+
+export function toMemberResultDto(
+  row: MemberColumns & { is_following: boolean },
+): MemberResult {
+  return { ...toMemberDto(row), isFollowing: row.is_following };
+}
 
 // Schemas rather than bare types: the search box parses API responses with them.
 export const movieSummarySchema = z.object({

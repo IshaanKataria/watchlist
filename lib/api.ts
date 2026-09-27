@@ -13,7 +13,7 @@ export function errorMessage(body: unknown) {
 
 // Failures are toasted with the server's message, so callers only handle success.
 export async function mutate(
-  method: "POST" | "PATCH" | "DELETE",
+  method: "POST" | "PUT" | "PATCH" | "DELETE",
   path: string,
   body?: unknown,
 ) {

@@ -114,20 +114,29 @@ async function cacheFilm([title, year]: Film) {
   return id;
 }
 
-const { data: profiles } = await supabase
-  .from("profiles")
-  .select("id, handle")
-  .in(
-    "handle",
-    MEMBERS.map((member) => member.handle),
-  )
-  .throwOnError();
+// By email, not handle: members can rename themselves in the app, and a handle given up can be
+// taken by another account.
+const { data, error: listError } = await supabase.auth.admin.listUsers({
+  perPage: 1000,
+});
+if (listError) throw listError;
 
-// Replaces each member's list, so a rerun restores exactly this state. Dates step back three days per
-// film and are offset per member, so a feed of their activity interleaves.
+function profileId(handle: string) {
+  const email = `${handle}@example.com`;
+  const id = data.users.find((user) => user.email === email)?.id;
+  if (!id) throw new Error(`No account for ${email}`);
+  return id;
+}
+
+// Restores each member's handle, name and list, so a rerun undoes anything changed in the app. Dates
+// step back three days per film and are offset per member, so a feed of their activity interleaves.
 for (const [offset, member] of MEMBERS.entries()) {
-  const userId = profiles.find(({ handle }) => handle === member.handle)?.id;
-  if (!userId) throw new Error(`No profile for ${member.handle}`);
+  const userId = profileId(member.handle);
+  await supabase
+    .from("profiles")
+    .update({ handle: member.handle, display_name: member.name })
+    .eq("id", userId)
+    .throwOnError();
   const daysAgo = (index: number) =>
     new Date(Date.now() - (index * 3 + offset) * DAY).toISOString();
   const rows: TablesInsert<"watchlist_entries">[] = [];
@@ -159,3 +168,22 @@ for (const [offset, member] of MEMBERS.entries()) {
     `${member.handle}: ${member.watched.length} watched, ${member.toWatch.length} to watch`,
   );
 }
+
+// demo follows the other two, so its feed has their activity. Replaced like the lists, so a rerun
+// also undoes follows made while trying the app.
+const demoId = profileId("demo");
+await supabase
+  .from("follows")
+  .delete()
+  .eq("follower_id", demoId)
+  .throwOnError();
+await supabase
+  .from("follows")
+  .insert(
+    ["sam", "mira"].map((handle) => ({
+      follower_id: demoId,
+      followee_id: profileId(handle),
+    })),
+  )
+  .throwOnError();
+console.log("demo: follows sam and mira");

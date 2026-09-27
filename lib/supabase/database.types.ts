@@ -39,6 +39,36 @@ export type Database = {
   };
   public: {
     Tables: {
+      follows: {
+        Row: {
+          followee_id: string;
+          follower_id: string;
+        };
+        Insert: {
+          followee_id: string;
+          follower_id: string;
+        };
+        Update: {
+          followee_id?: string;
+          follower_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "follows_followee_id_fkey";
+            columns: ["followee_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       genres: {
         Row: {
           id: number;
@@ -223,7 +253,26 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      follow_member: { Args: { target_handle: string }; Returns: undefined };
+      list_following: {
+        Args: never;
+        Returns: {
+          avatar_url: string;
+          display_name: string;
+          handle: string;
+        }[];
+      };
       reserved_handles: { Args: never; Returns: string[] };
+      search_members: {
+        Args: { q: string };
+        Returns: {
+          avatar_url: string;
+          display_name: string;
+          handle: string;
+          is_following: boolean;
+        }[];
+      };
+      unfollow_member: { Args: { target_handle: string }; Returns: undefined };
       user_stats: { Args: { target: string }; Returns: Json };
     };
     Enums: {
