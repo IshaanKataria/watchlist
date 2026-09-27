@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   description: "Track the films you want to see, rate what you have seen.",
 };
 
-// Lets the page run under the iPhone home indicator, so env(safe-area-inset-bottom) has a value
-// for the tab bar to pad by.
+// Lets the page run under the iPhone home indicator and notch, so env(safe-area-inset-*) has values
+// to pad by: the tab bar and rating drawer at the bottom, the body at the sides in landscape.
 export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]">
         {children}
         <Toaster position="top-center" />
       </body>
