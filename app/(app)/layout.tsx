@@ -38,11 +38,22 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       {/* TMDB's terms ask for their logo and this notice. Below md the bottom padding clears the
           fixed tab bar: its 4rem, a 1.5rem gap and the home indicator. */}
       <footer className="border-t border-border/60 pt-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-6">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 text-center text-xs text-muted-foreground sm:flex-row sm:text-left">
-          <Image src="/tmdb-logo.svg" alt="TMDB" width={92} height={12} />
-          <p className="text-balance">
-            This product uses the TMDB API but is not endorsed or certified by
-            TMDB.
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 text-center text-xs text-muted-foreground lg:flex-row lg:justify-between lg:text-left">
+          <div className="flex flex-col items-center gap-3 sm:flex-row">
+            <Image src="/tmdb-logo.svg" alt="TMDB" width={92} height={12} />
+            <p className="text-balance">
+              This product uses the TMDB API but is not endorsed or certified by
+              TMDB.
+            </p>
+          </div>
+          <p className="flex flex-wrap items-center justify-center gap-x-2">
+            Built by Ishaan Kataria for the MAC Projects take-home
+            <a
+              href="https://github.com/IshaanKataria/watchlist"
+              className="inline-flex h-11 min-w-11 items-center justify-center rounded-sm underline underline-offset-4 outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              GitHub
+            </a>
           </p>
         </div>
       </footer>
