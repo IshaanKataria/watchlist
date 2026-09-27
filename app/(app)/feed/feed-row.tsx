@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { MemberAvatar } from "@/components/member-avatar";
 import { TmdbImage } from "@/components/tmdb-image";
-import type { FeedItem as Item } from "@/services/dto";
+import type { FeedItem } from "@/services/dto";
 
 const LINK =
   "rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -28,7 +28,7 @@ function timeAgo(iso: string) {
     : relative.format(0, "second");
 }
 
-export function FeedItem({ item }: { item: Item }) {
+export function FeedRow({ item }: { item: FeedItem }) {
   const { member, movie, rating } = item;
   const film = `/movie/${movie.tmdbId}`;
 

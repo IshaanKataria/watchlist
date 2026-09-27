@@ -110,7 +110,7 @@ erDiagram
 - The regenerate limit checks, then acts: parallel requests straight after a list change can each pay for a model call. The page disables the button while one is running.
 - Search shows TMDB's first page of results (20 films).
 - The watchlist and a member's watched films are not paginated.
-- The feed pages by `watched_at` alone: two entries from people you follow, marked watched in the same microsecond and split across a page edge, could skip one.
+- The feed pages by `watched_at` alone, so entries sharing one timestamp across a page edge are skipped past. The app marks one film watched per request; only a bulk SQL update, which stamps every row with its transaction's `now()`, would create such a tie.
 - Friends who watched covers the first 500 films of a grid; only a watchlist longer than that could pass it.
 
 ---

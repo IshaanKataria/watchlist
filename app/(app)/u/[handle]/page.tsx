@@ -28,9 +28,14 @@ export default async function MemberPage({ params }: PageProps<"/u/[handle]">) {
           </h1>
           <p className="truncate text-muted-foreground">@{member.handle}</p>
           <p className="text-sm text-muted-foreground">
-            <Count n={member.followerCount} />{" "}
+            <span className="font-medium text-foreground tabular-nums">
+              {member.followerCount}
+            </span>{" "}
             {member.followerCount === 1 ? "follower" : "followers"} ·{" "}
-            <Count n={member.followingCount} /> following
+            <span className="font-medium text-foreground tabular-nums">
+              {member.followingCount}
+            </span>{" "}
+            following
           </p>
         </div>
         {/* Its own row on phones, so the name and counts keep the width. */}
@@ -59,10 +64,6 @@ export default async function MemberPage({ params }: PageProps<"/u/[handle]">) {
       />
     </div>
   );
-}
-
-function Count({ n }: { n: number }) {
-  return <span className="font-medium text-foreground tabular-nums">{n}</span>;
 }
 
 // stats is null unless the database let the caller see this member's films: themselves or someone they follow.

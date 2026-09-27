@@ -6,8 +6,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { requireUserId } from "@/lib/supabase/server";
 import { getFeed } from "@/services/social";
 
-import { FeedItem } from "./feed-item";
 import { FeedList } from "./feed-list";
+import { FeedRow } from "./feed-row";
 
 export default async function FeedPage() {
   await requireUserId();
@@ -28,7 +28,7 @@ export default async function FeedPage() {
       {feed.items.length > 0 ? (
         <FeedList cursor={feed.nextCursor}>
           {feed.items.map((item) => (
-            <FeedItem
+            <FeedRow
               key={`${item.member.handle} ${item.movie.tmdbId}`}
               item={item}
             />

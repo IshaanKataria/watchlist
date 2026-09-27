@@ -4,10 +4,10 @@ import { useState, useTransition, type ReactNode } from "react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { errorMessage } from "@/lib/api";
-import { feedItemSchema, type FeedItem as Item } from "@/services/dto";
+import { getJson } from "@/lib/api";
+import { feedItemSchema, type FeedItem } from "@/services/dto";
 
-import { FeedItem } from "./feed-item";
+import { FeedRow } from "./feed-row";
 
 const pageSchema = z.object({
   items: z.array(feedItemSchema),
@@ -23,25 +23,25 @@ export function FeedList({
   children: ReactNode;
   cursor: string | null;
 }) {
-  const [older, setOlder] = useState<Item[]>([]);
+  const [older, setOlder] = useState<FeedItem[]>([]);
   const [next, setNext] = useState(cursor);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function loadMore(before: string) {
     startTransition(async () => {
-      const res = await fetch(
+      const page = await getJson(
         `/api/feed?${new URLSearchParams({ before })}`,
-      ).catch(() => null);
-      const body: unknown = await res?.json().catch(() => null);
-      const page = pageSchema.safeParse(body);
-      if (!res?.ok || !page.success) {
-        setError(errorMessage(body));
+        pageSchema,
+      );
+      if (!page.data) {
+        setError(page.error);
         return;
       }
+      const { items, nextCursor } = page.data;
       setError(null);
-      setOlder((items) => [...items, ...page.data.items]);
-      setNext(page.data.nextCursor);
+      setOlder((loaded) => [...loaded, ...items]);
+      setNext(nextCursor);
     });
   }
 
@@ -50,7 +50,7 @@ export function FeedList({
       <ol className="divide-y">
         {children}
         {older.map((item) => (
-          <FeedItem
+          <FeedRow
             key={`${item.member.handle} ${item.movie.tmdbId}`}
             item={item}
           />

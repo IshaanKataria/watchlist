@@ -8,7 +8,7 @@ import { PosterGrid, PosterGridSkeleton } from "@/components/poster-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WatchlistButton } from "@/components/watchlist-button";
-import { errorMessage } from "@/lib/api";
+import { getJson } from "@/lib/api";
 import { entrySchema, memberSchema, movieSummarySchema } from "@/services/dto";
 
 const responseSchema = z.object({
@@ -25,14 +25,12 @@ const score = new Intl.NumberFormat("en", {
   maximumFractionDigits: 1,
 });
 
-async function search(q: string, signal: AbortSignal) {
-  const res = await fetch(`/api/movies/search?${new URLSearchParams({ q })}`, {
+function search(q: string, signal: AbortSignal) {
+  return getJson(
+    `/api/movies/search?${new URLSearchParams({ q })}`,
+    responseSchema,
     signal,
-  }).catch(() => null);
-  const body: unknown = await res?.json().catch(() => null);
-  const data = responseSchema.safeParse(body);
-  if (res?.ok && data.success) return { movies: data.data.results };
-  return { error: errorMessage(body) };
+  );
 }
 
 type Result = { q: string } & Awaited<ReturnType<typeof search>>;
@@ -104,7 +102,7 @@ function SearchResults({
   }
   // Results for an older query never render: a skeleton stands in until the current one answers.
   if (result?.q !== q) return <PosterGridSkeleton />;
-  if (!result.movies) {
+  if (!result.data) {
     return (
       <div role="alert" className="grid justify-items-start gap-3">
         <p className="text-sm">{result.error}</p>
@@ -114,7 +112,7 @@ function SearchResults({
       </div>
     );
   }
-  if (result.movies.length === 0) {
+  if (result.data.results.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
         No films match &ldquo;{q}&rdquo;.
@@ -123,7 +121,7 @@ function SearchResults({
   }
   return (
     <PosterGrid
-      movies={result.movies}
+      movies={result.data.results}
       chip={(movie) =>
         movie.voteAverage > 0 ? score.format(movie.voteAverage) : null
       }
