@@ -47,7 +47,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             </p>
           </div>
           <p className="flex flex-wrap items-center justify-center gap-x-2">
-            Built by Ishaan Kataria for the MAC Projects take-home
+            Built by Ishaan Kataria
             <a
               href="https://github.com/IshaanKataria/watchlist"
               className="inline-flex h-11 min-w-11 items-center justify-center rounded-sm underline underline-offset-4 outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"

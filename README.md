@@ -1,6 +1,6 @@
 # Watchlist
 
-A Letterboxd-style film tracker I built for the MAC Projects take-home.
+A Letterboxd-style film tracker I built for myself. I wanted one place to keep the films I mean to watch, rate the ones I've seen, see what my friends are watching, and get suggestions based on my own ratings rather than what's trending.
 
 Live: https://watchlist-ashen-ten.vercel.app
 
@@ -26,7 +26,7 @@ More phone and desktop captures are in [`docs/screenshots`](docs/screenshots).
 - See how closely your ratings match someone you follow: their page shows a percent once you've both rated 3 of the same films.
 - Phone first: a bottom tab bar, bottom sheets instead of dialogs, a 2 to 6 column poster grid and 44px touch targets.
 
-## Checks from the brief
+## How it keeps your data private
 
 - Rows are keyed by the Supabase auth user id, never an email. `supabase/migrations/0001_profiles.sql`
 - The user id only comes from the session, so an id sent in a body, query or header is ignored. `lib/http.ts`, `services/watchlist.schema.ts`
@@ -52,7 +52,7 @@ More phone and desktop captures are in [`docs/screenshots`](docs/screenshots).
 
 ## Author
 
-Ishaan Kataria · ishaankataria3@gmail.com
+Made by Ishaan Kataria · ishaankataria3@gmail.com. If you try it and something feels off, I'd like to hear about it.
 
 <details>
 <summary>Architecture</summary>
@@ -192,7 +192,7 @@ pnpm dev
 - Short reviews and diary entries
 - Custom lists
 - A privacy toggle for member pages
-- TV support, which the brief left out of scope
+- TV shows, since it only covers films for now
 
 </details>
 
